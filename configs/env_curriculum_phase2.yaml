@@ -1,0 +1,18 @@
+# Curriculum Phase 2: Medium (10 agents)
+# Scale up to full agent count
+width: 30.0
+height: 30.0
+dt: 0.2
+n_agents: 10
+k_neighbors: 6
+v_max: 1.5
+a_max: 0.2
+turn_max: 0.3
+feed_radius: 3.0
+c_max: 0.06
+d_safe: 0.6
+S_max: 4.0
+S_thr: 0.8
+regen_r: 0.3
+n_patches: 15
+episode_len: 1500
