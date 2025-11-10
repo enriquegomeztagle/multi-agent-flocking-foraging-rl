@@ -296,62 +296,70 @@ class FlockForageParallel(ParallelEnv):
 
     def _compute_rewards(self, intake: np.ndarray) -> Dict[str, float]:
         """
-        BALANCED reward structure encouraging movement, exploration, and foraging.
+        OPTIMIZED REWARD STRUCTURE v3 - Target: 70-80% efficiency.
 
-        Components:
-        1. Food reward: Direct eating (DOMINANT)
-        2. Movement reward: Encourage exploration
-        3. Approach reward: Reward getting closer to patches
-        4. Mild overcrowding penalty: Encourage distribution (not too harsh!)
+        Based on Boids analysis, prioritizes:
+        1. ULTRA DOMINANT: Eating (200x)
+        2. STRONG: Being near food patches (exponential proximity)
+        3. MODERATE: Approaching patches with food (3x distance delta)
+        4. MODERATE: Constant exploration movement
+        5. LIGHT: Group cohesion (weak bonus)
+        6. VERY LIGHT: Overcrowding (minimal penalty)
         """
         rewards = np.zeros(self.cfg.n_agents, dtype=np.float32)
 
-        # 1. FOOD REWARD - Primary objective (100x multiplier - very strong!)
+        # 1. FOOD REWARD - ULTRA DOMINANT (200x multiplier!)
         food_reward = intake / self.cfg.c_max
-        rewards += food_reward * 100.0
+        rewards += food_reward * 200.0  # Eating is EVERYTHING
 
-        # 2. MOVEMENT REWARD - Encourage exploration (prevents spinning/camping)
         for i in range(self.cfg.n_agents):
-            speed = np.linalg.norm(self._vel[i])
-            # Reward moving at reasonable speed (0.5 to 1.0 of v_max)
-            if speed > 0.5 * self.cfg.v_max:
-                rewards[i] += 0.5  # Small but constant reward for moving
-            elif speed < 0.1 * self.cfg.v_max:
-                rewards[i] -= 0.3  # Penalty for standing still/spinning
+            # Get current patch info
+            patch_center, stock, _, patch_id = self._patches.get_patch_info(self._pos[i])
 
-        # 3. APPROACH REWARD - Reward getting closer to nearest patch
-        for i in range(self.cfg.n_agents):
-            patch_center, _, _, patch_id = self._patches.get_patch_info(self._pos[i])
-
-            # Compute current distance to nearest patch
+            # Distance to nearest patch
             dx = patch_center[0] - self._pos[i, 0]
             dy = patch_center[1] - self._pos[i, 1]
-            current_dist = np.sqrt(dx * dx + dy * dy)
+            current_dist = np.sqrt(dx*dx + dy*dy)
 
-            # Reward for getting closer (compare with previous distance)
-            if hasattr(self, "_prev_patch_distances"):
+            # 2. PROXIMITY REWARD - Strong gradient towards patches with food
+            if stock > 0.1:  # Only if patch has food
+                # Exponential decay: closer = much better
+                proximity_reward = 2.0 * np.exp(-current_dist / 5.0)
+                rewards[i] += proximity_reward
+
+            # 3. APPROACH REWARD - Reward moving toward patches
+            if hasattr(self, '_prev_patch_distances'):
                 dist_change = self._prev_patch_distances[i] - current_dist
-                if dist_change > 0:  # Got closer
-                    rewards[i] += 1.0 * dist_change  # Reward proportional to approach
+                if dist_change > 0 and stock > 0.1:  # Moving closer to food
+                    rewards[i] += 3.0 * dist_change  # 3x stronger than before
 
-            # Update previous distance
             self._prev_patch_distances[i] = current_dist
 
-        # 4. MILD OVERCROWDING PENALTY - Encourage spreading (much lighter!)
-        for i in range(self.cfg.n_agents):
-            my_patch_id = self._prev_patch_id[i]
+            # 4. EXPLORATION REWARD - Encourage constant movement
+            speed = np.linalg.norm(self._vel[i])
+            target_speed = 0.7 * self.cfg.v_max
 
-            # Track patch IDs
+            if speed > 0.4 * self.cfg.v_max:  # Moving at good speed
+                rewards[i] += 1.0
+            elif speed < 0.2 * self.cfg.v_max:  # Too slow or stopped
+                rewards[i] -= 2.0  # Stronger penalty for camping
+
+            # 5. LIGHT COHESION BONUS - Stay somewhat together
+            if hasattr(self, '_distances'):
+                mean_neighbor_dist = np.mean(self._distances[i])
+                if 3.0 < mean_neighbor_dist < 10.0:  # Not too close, not too far
+                    rewards[i] += 0.3
+
+        # 6. VERY LIGHT OVERCROWDING - Allow some sharing, penalize excess
+        for i in range(self.cfg.n_agents):
             _, _, _, my_patch_id = self._patches.get_patch_info(self._pos[i])
             self._prev_patch_id[i] = my_patch_id
 
-            # Count agents at same patch
             agents_at_my_patch = np.sum(self._prev_patch_id == my_patch_id)
 
-            # MILD linear penalty (not quadratic!)
-            if agents_at_my_patch > 2:  # Allow 2 agents, penalize more
-                # Linear: 3 agents = -1, 4 agents = -2, etc.
-                rewards[i] -= 1.0 * (agents_at_my_patch - 2)
+            # Only penalize if >3 agents (allow small groups)
+            if agents_at_my_patch > 3:
+                rewards[i] -= 0.5 * (agents_at_my_patch - 3)
 
         return {a: float(rewards[i]) for i, a in enumerate(self.agents)}
 
