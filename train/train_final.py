@@ -24,30 +24,27 @@ from env.flockforage_parallel import FlockForageParallel, EnvConfig
 TRAINING_CONFIG = {
     # Modo de entrenamiento
     "mode": "fast",  # "fast" (1M steps, ~20min) o "full" (10M steps, ~3hrs)
-
     # Phase 1: Fácil (menos agentes)
     "phase1": {
         "n_agents": 5,
         "n_patches": 12,
         "timesteps": 500_000 if "fast" else 5_000_000,  # Se actualiza en main()
     },
-
     # Phase 2: Completo
     "phase2": {
         "n_agents": 10,
         "n_patches": 15,
         "timesteps": 500_000 if "fast" else 5_000_000,  # Se actualiza en main()
     },
-
     # Hyperparameters del modelo
     "model": {
         "lstm_hidden_size": 32,  # 32 (fast) o 64 (full)
-        "n_steps": 1024,         # 1024 (fast) o 2048 (full)
-        "batch_size": 256,       # 256 (fast) o 512 (full)
-        "n_epochs": 5,           # 5 (fast) o 10 (full)
+        "n_steps": 1024,  # 1024 (fast) o 2048 (full)
+        "batch_size": 256,  # 256 (fast) o 512 (full)
+        "n_epochs": 5,  # 5 (fast) o 10 (full)
         "learning_rate": 5e-4,
-        "n_envs": 2,             # Parallel environments
-    }
+        "n_envs": 2,  # Parallel environments
+    },
 }
 # ============================================================================
 
@@ -60,9 +57,12 @@ def load_yaml(path: str) -> dict:
 def make_vec_env(env_cfg: dict, n_envs: int):
     def env_fn():
         return FlockForageParallel(EnvConfig(**env_cfg))
+
     env = env_fn()
     venv = ss.pettingzoo_env_to_vec_env_v1(env)
-    venv = ss.concat_vec_envs_v1(venv, num_vec_envs=n_envs, num_cpus=0, base_class="stable_baselines3")
+    venv = ss.concat_vec_envs_v1(
+        venv, num_vec_envs=n_envs, num_cpus=0, base_class="stable_baselines3"
+    )
     return venv
 
 
@@ -79,9 +79,12 @@ class ProgressCallback(BaseCallback):
         if progress - self.last_print >= 0.2:  # Print every 20%
             elapsed = time.time() - self.start_time
             eta = (elapsed / progress) * (1 - progress) if progress > 0 else 0
-            print(f"  [{self.phase_name}] Progress: {progress*100:.0f}% | "
-                  f"Timesteps: {self.num_timesteps:,}/{self.total_timesteps:,} | "
-                  f"Elapsed: {elapsed/60:.1f}min | ETA: {eta/60:.1f}min", flush=True)
+            print(
+                f"  [{self.phase_name}] Progress: {progress*100:.0f}% | "
+                f"Timesteps: {self.num_timesteps:,}/{self.total_timesteps:,} | "
+                f"Elapsed: {elapsed/60:.1f}min | ETA: {eta/60:.1f}min",
+                flush=True,
+            )
             self.last_print = progress
         return True
 
@@ -97,21 +100,28 @@ def train_phase(env_cfg, phase_name, total_timesteps, n_envs, prev_model_path=No
     print(f"{'='*80}\n", flush=True)
 
     venv = make_vec_env(env_cfg, n_envs)
-    venv = VecNormalize(venv, training=True, norm_obs=True, norm_reward=True,
-                       clip_obs=10.0, clip_reward=10.0, gamma=0.99)
+    venv = VecNormalize(
+        venv,
+        training=True,
+        norm_obs=True,
+        norm_reward=True,
+        clip_obs=10.0,
+        clip_reward=10.0,
+        gamma=0.99,
+    )
 
     # Create or load RecurrentPPO model
     if prev_model_path and os.path.exists(f"{prev_model_path}.zip"):
         print(f"Loading previous model from {prev_model_path}...", flush=True)
-        model = RecurrentPPO.load(prev_model_path)
-        model.set_env(venv)
+        model = RecurrentPPO.load(prev_model_path, env=venv)
 
-        # Load previous normalizer
+        # Load previous normalizer stats (optional, helps with stability)
         vecnorm_path = f"{os.path.dirname(prev_model_path)}/vecnorm.pkl"
         if os.path.exists(vecnorm_path):
             venv_prev = VecNormalize.load(vecnorm_path, venv)
             venv.obs_rms = venv_prev.obs_rms
             venv.ret_rms = venv_prev.ret_rms
+        print("✅ Model loaded with new environment!", flush=True)
     else:
         print("Creating RecurrentPPO model with LSTM...", flush=True)
         model = RecurrentPPO(
@@ -130,8 +140,8 @@ def train_phase(env_cfg, phase_name, total_timesteps, n_envs, prev_model_path=No
                 n_lstm_layers=1,
                 lstm_hidden_size=32,  # Reduced from 64 for faster init
                 enable_critic_lstm=True,
-                shared_lstm=False
-            )
+                shared_lstm=False,
+            ),
         )
         print("✅ Model created!", flush=True)
 
@@ -143,7 +153,7 @@ def train_phase(env_cfg, phase_name, total_timesteps, n_envs, prev_model_path=No
         total_timesteps=total_timesteps,
         progress_bar=False,
         callback=callback,
-        reset_num_timesteps=False if prev_model_path else True
+        reset_num_timesteps=False if prev_model_path else True,
     )
 
     train_time = time.time() - start
@@ -169,22 +179,22 @@ def main():
     print("=" * 80, flush=True)
 
     phase1_cfg = {
-        'n_agents': 5,
-        'n_patches': 12,
-        'width': 30.0,
-        'height': 30.0,
-        'episode_len': 1500,
-        'feed_radius': 3.0,
-        'c_max': 0.06,
-        'S_max': 1.0,
-        'regen_r': 0.3
+        "n_agents": 5,
+        "n_patches": 12,
+        "width": 30.0,
+        "height": 30.0,
+        "episode_len": 1500,
+        "feed_radius": 3.0,
+        "c_max": 0.06,
+        "S_max": 1.0,
+        "regen_r": 0.3,
     }
 
     model, venv1, time1 = train_phase(
         phase1_cfg,
         "Phase 1 (5 agents)",
         total_timesteps=500_000,
-        n_envs=2  # Reduced from 4 for stability
+        n_envs=2,  # Reduced from 4 for stability
     )
 
     # Save Phase 1
@@ -199,15 +209,15 @@ def main():
     print("=" * 80, flush=True)
 
     phase2_cfg = {
-        'n_agents': 10,
-        'n_patches': 15,
-        'width': 30.0,
-        'height': 30.0,
-        'episode_len': 1500,
-        'feed_radius': 3.0,
-        'c_max': 0.06,
-        'S_max': 1.0,
-        'regen_r': 0.3
+        "n_agents": 10,
+        "n_patches": 15,
+        "width": 30.0,
+        "height": 30.0,
+        "episode_len": 1500,
+        "feed_radius": 3.0,
+        "c_max": 0.06,
+        "S_max": 1.0,
+        "regen_r": 0.3,
     }
 
     model, venv2, time2 = train_phase(
@@ -215,7 +225,7 @@ def main():
         "Phase 2 (10 agents)",
         total_timesteps=500_000,
         n_envs=2,
-        prev_model_path="models/recurrent_fast/phase1/model"
+        prev_model_path="models/recurrent_fast/phase1/model",
     )
 
     # Save final model
@@ -247,10 +257,10 @@ def main():
         episode_starts = np.ones((1,), dtype=bool)
 
         ep_reward = 0
-        for step in range(phase2_cfg['episode_len']):
-            action, lstm_states = model.predict(obs, state=lstm_states,
-                                                episode_start=episode_starts,
-                                                deterministic=True)
+        for step in range(phase2_cfg["episode_len"]):
+            action, lstm_states = model.predict(
+                obs, state=lstm_states, episode_start=episode_starts, deterministic=True
+            )
             episode_starts = np.zeros((1,), dtype=bool)
             obs, reward, done, info = venv2.step(action)
             ep_reward += reward[0]
@@ -276,7 +286,7 @@ def main():
         "evaluation": {
             "mean_reward": float(np.mean(rewards)),
             "mean_intake": float(np.mean(intakes)),
-        }
+        },
     }
 
     os.makedirs("results", exist_ok=True)
