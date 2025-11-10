@@ -18,6 +18,9 @@ This project models collective animal behavior (birds/fish) combining:
 - **Curriculum Learning**: Progressive training from 5 → 10 agents
 - **Ultra-Simplified Rewards**: Food (30x) - Overcrowding (3x)
 - **Comprehensive Metrics**: Fairness (Gini), flocking quality, sustainability
+- **Baseline Comparison**: Classical Boids controller for comparative analysis
+- **Visualization Dashboard**: Real-time metrics and agent behavior display
+- **Demo Video Generation**: High-quality MP4 videos for presentations
 
 ## 📦 Installation
 
@@ -51,6 +54,66 @@ This will:
 python -m train.evaluate
 ```
 
+### Compare Baseline vs RL (Objectives O2 & O4)
+
+Compare classical Boids rules with RL-trained agents:
+
+```bash
+# Evaluate baseline Boids controller
+python -m train.baseline_boids
+
+# Compare both approaches (requires trained model)
+python -m train.compare_baseline_vs_rl
+```
+
+This generates a comparative analysis table showing:
+- Cohesion and alignment metrics
+- Gini coefficient (fairness)
+- Resource sustainability
+- Performance improvements
+
+**Output:** `results/comparison_baseline_vs_rl.json`
+
+### Visualization Dashboard
+
+View real-time simulation with metrics:
+
+```bash
+# Baseline Boids controller
+python -m visualize.dashboard --mode baseline --steps 500
+
+# RL agent (requires trained model)
+python -m visualize.dashboard --mode rl --steps 500
+
+# Save as video instead of showing live
+python -m visualize.dashboard --mode rl --steps 500 --save results/dashboard.mp4
+```
+
+Shows:
+- Agent positions and velocities
+- Resource patch levels
+- Real-time polarization, Gini, and stock metrics
+
+### Generate Demo Videos
+
+Create presentation-quality videos:
+
+```bash
+# Generate both baseline and RL videos
+python -m visualize.generate_video --mode both --steps 500
+
+# Only baseline
+python -m visualize.generate_video --mode baseline --steps 500
+
+# Only RL (requires trained model)
+python -m visualize.generate_video --mode rl --steps 500
+
+# Custom output directory and quality
+python -m visualize.generate_video --mode both --steps 800 --fps 30 --dpi 200 --output-dir my_videos
+```
+
+**Output:** `results/videos/baseline_boids_demo.mp4` and `results/videos/rl_recurrentppo_demo.mp4`
+
 ## 🏗️ Project Structure
 
 ```
@@ -58,23 +121,31 @@ multi-agent-flocking-foraging-rl/
 ├── README.md
 ├── requirements.txt
 ├── configs/
-│   ├── env_curriculum_phase1.yaml  # Phase 1: 5 agents
-│   └── env_curriculum_phase2.yaml  # Phase 2: 10 agents
+│   ├── env_curriculum_phase1.yaml     # Phase 1: 5 agents
+│   └── env_curriculum_phase2.yaml     # Phase 2: 10 agents
 ├── env/
-│   ├── flockforage_parallel.py     # PettingZoo ParallelEnv
-│   ├── physics.py                  # Reflective boundaries
-│   └── patches.py                  # Resource patches
+│   ├── flockforage_parallel.py        # PettingZoo ParallelEnv
+│   ├── physics.py                     # Reflective boundaries
+│   └── patches.py                     # Resource patches
 ├── metrics/
-│   ├── fairness.py                 # Gini coefficient
-│   ├── flocking.py                 # Polarization, cohesion
-│   └── sustainability.py           # Resource metrics
+│   ├── fairness.py                    # Gini coefficient
+│   ├── flocking.py                    # Polarization, cohesion
+│   └── sustainability.py              # Resource metrics
 ├── train/
-│   ├── run_advanced_training.py    # MAIN: RecurrentPPO + Curriculum
-│   └── evaluate.py                 # Evaluation utilities
+│   ├── run_advanced_training.py       # MAIN: RecurrentPPO + Curriculum
+│   ├── evaluate.py                    # Evaluation utilities
+│   ├── baseline_boids.py              # Classical Boids controller
+│   └── compare_baseline_vs_rl.py      # Baseline vs RL comparison
+├── visualize/
+│   ├── dashboard.py                   # Real-time visualization
+│   └── generate_video.py              # Demo video generator
 ├── docs/
 │   └── PropuestaProyectoFinal-v2-UlisesBaez.typ
-├── models/                         # Saved models (generated)
-└── results/                        # Metrics & results (generated)
+├── models/                            # Saved models (generated)
+└── results/                           # Metrics & results (generated)
+    ├── baseline_boids_metrics.json
+    ├── comparison_baseline_vs_rl.json
+    └── videos/                        # Demo videos
 ```
 
 ## 🔬 Environment Details
@@ -192,7 +263,10 @@ regen_r: 0.3
 
 | Requirement | Status |
 |-------------|--------|
-| Flocking + Foraging environment | ✅ Implemented |
+| **O1:** Unified flocking + foraging environment | ✅ Implemented |
+| **O2:** Measure metrics under classical rules | ✅ Baseline Boids |
+| **O3:** RL rewards promoting cooperation | ✅ Food + overcrowding |
+| **O4:** Evaluate Gini & stability (baseline vs RL) | ✅ Comparison script |
 | PettingZoo ParallelEnv | ✅ Implemented |
 | Reflective boundaries | ✅ Implemented |
 | 10-14D observation space | ✅ 13D |
@@ -202,6 +276,8 @@ regen_r: 0.3
 | Sustainability metrics | ✅ Tracked |
 | Curriculum learning | ✅ 2 phases |
 | 1-2M timesteps | ✅ 10M (exceeded) |
+| **Visualization dashboard** | ✅ Real-time metrics |
+| **Demo videos** | ✅ Video generator |
 
 ## 📚 References
 
@@ -218,8 +294,8 @@ MIT
 
 ## 🚧 Future Work
 
-- **Visualization Dashboard**: Real-time metrics display
-- **Demo Videos**: Matplotlib animations of agent behavior
-- **Communication**: Explicit message passing between agents
+- **Explicit Communication**: Message passing between agents
 - **Graph Neural Networks**: For better coordination
 - **Attention Mechanisms**: Dynamic neighbor weighting
+- **3D Environment**: Extend to three-dimensional space
+- **Heterogeneous Agents**: Different agent types with specialized roles
