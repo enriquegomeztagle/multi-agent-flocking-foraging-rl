@@ -296,68 +296,54 @@ class FlockForageParallel(ParallelEnv):
 
     def _compute_rewards(self, intake: np.ndarray) -> Dict[str, float]:
         """
-        OPTIMIZED REWARD STRUCTURE v3 - Target: 70-80% efficiency.
-
-        Based on Boids analysis, prioritizes:
-        1. ULTRA DOMINANT: Eating (200x)
-        2. STRONG: Being near food patches (exponential proximity)
-        3. MODERATE: Approaching patches with food (3x distance delta)
-        4. MODERATE: Constant exploration movement
-        5. LIGHT: Group cohesion (weak bonus)
-        6. VERY LIGHT: Overcrowding (minimal penalty)
+        Components:
+        1. Food reward: primary objective
+        2. Exponential proximity: Strong gradient towards food patches
+        3. Approach reward: Encourage moving closer to food
+        4. Light overcrowding penalty: Allow group foraging but prevent total clustering
         """
         rewards = np.zeros(self.cfg.n_agents, dtype=np.float32)
 
-        # 1. FOOD REWARD - ULTRA DOMINANT (200x multiplier!)
+        # Track previous distances for approach rewards
+        if not hasattr(self, "_prev_patch_distances"):
+            self._prev_patch_distances = np.zeros(self.cfg.n_agents, dtype=np.float32)
+        if not hasattr(self, "_prev_patch_id"):
+            self._prev_patch_id = np.full(self.cfg.n_agents, -1, dtype=np.int32)
+
+        # 1. FOOD REWARD - 200x multiplier
         food_reward = intake / self.cfg.c_max
-        rewards += food_reward * 200.0  # Eating is EVERYTHING
+        rewards += food_reward * 200.0
 
         for i in range(self.cfg.n_agents):
             # Get current patch info
-            patch_center, stock, _, patch_id = self._patches.get_patch_info(self._pos[i])
+            patch_center, stock, _, patch_id = self._patches.get_patch_info(
+                self._pos[i]
+            )
 
             # Distance to nearest patch
             dx = patch_center[0] - self._pos[i, 0]
             dy = patch_center[1] - self._pos[i, 1]
-            current_dist = np.sqrt(dx*dx + dy*dy)
+            current_dist = np.sqrt(dx * dx + dy * dy)
 
-            # 2. PROXIMITY REWARD - Strong gradient towards patches with food
-            if stock > 0.1:  # Only if patch has food
-                # Exponential decay: closer = much better
+            # 2. PROXIMITY REWARD - Exponential gradient
+            if stock > 0.1:
                 proximity_reward = 2.0 * np.exp(-current_dist / 5.0)
                 rewards[i] += proximity_reward
 
-            # 3. APPROACH REWARD - Reward moving toward patches
-            if hasattr(self, '_prev_patch_distances'):
+            # 3. APPROACH REWARD - Reward moving toward food
+            if self._prev_patch_distances[i] > 0:
                 dist_change = self._prev_patch_distances[i] - current_dist
-                if dist_change > 0 and stock > 0.1:  # Moving closer to food
-                    rewards[i] += 3.0 * dist_change  # 3x stronger than before
+                if dist_change > 0 and stock > 0.1:
+                    rewards[i] += 3.0 * dist_change
 
             self._prev_patch_distances[i] = current_dist
 
-            # 4. EXPLORATION REWARD - Encourage constant movement
-            speed = np.linalg.norm(self._vel[i])
-            target_speed = 0.7 * self.cfg.v_max
-
-            if speed > 0.4 * self.cfg.v_max:  # Moving at good speed
-                rewards[i] += 1.0
-            elif speed < 0.2 * self.cfg.v_max:  # Too slow or stopped
-                rewards[i] -= 2.0  # Stronger penalty for camping
-
-            # 5. LIGHT COHESION BONUS - Stay somewhat together
-            if hasattr(self, '_distances'):
-                mean_neighbor_dist = np.mean(self._distances[i])
-                if 3.0 < mean_neighbor_dist < 10.0:  # Not too close, not too far
-                    rewards[i] += 0.3
-
-        # 6. VERY LIGHT OVERCROWDING - Allow some sharing, penalize excess
+        # 4. LIGHT OVERCROWDING PENALTY
         for i in range(self.cfg.n_agents):
             _, _, _, my_patch_id = self._patches.get_patch_info(self._pos[i])
             self._prev_patch_id[i] = my_patch_id
 
             agents_at_my_patch = np.sum(self._prev_patch_id == my_patch_id)
-
-            # Only penalize if >3 agents (allow small groups)
             if agents_at_my_patch > 3:
                 rewards[i] -= 0.5 * (agents_at_my_patch - 3)
 
