@@ -1,13 +1,3 @@
-"""
-TRAINING FINAL: PPO Simple + Rewards v3 Optimized + Long Training
-
-Estrategia para alcanzar 70-80% de eficiencia:
-- PPO Simple
-- Rewards v3 optimizados
-- 3-5M timesteps
-- Curriculum learning (5 → 10 agentes)
-"""
-
 import os
 import json
 import time
@@ -21,13 +11,13 @@ from metrics.fairness import gini
 
 
 # ============================================================================
-# CONFIGURACIÓN
+# CONFIGURACIÓN - REPLICA OF SUCCESS (270 INTAKE, 11.7%)
 # ============================================================================
 CONFIG = {
-    # Timesteps por fase
-    "phase1_steps": 2_000_000,  # 2M para fase fácil (~20-25 min)
-    "phase2_steps": 2_000_000,  # 2M para fase completa (~20-25 min)
-    # Total: 4M steps, ~45-50 min
+    # Timesteps por fase - EXACT CONFIG THAT WORKED
+    "phase1_steps": 2_000_000,  # 2M para fase fácil (~9 min)
+    "phase2_steps": 2_000_000,  # 2M para fase completa (~8 min)
+    # Total: 4M steps, ~17 min
     # Environment configs
     "phase1": {
         "n_agents": 5,
