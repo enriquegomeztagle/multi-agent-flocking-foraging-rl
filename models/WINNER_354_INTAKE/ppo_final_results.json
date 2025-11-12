@@ -1,0 +1,11 @@
+{
+  "training_time_min": 19.08703602949778,
+  "total_timesteps": 4000000,
+  "phase1_time_min": 10.09831091562907,
+  "phase2_time_min": 8.988725113868714,
+  "evaluation": {
+    "mean_intake": 354.70135498046875,
+    "mean_reward": 1193738.0850048647,
+    "mean_gini": 0.588880143575109
+  }
+}
