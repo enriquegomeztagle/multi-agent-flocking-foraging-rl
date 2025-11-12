@@ -1,0 +1,63 @@
+# Hard Mode Configuration for Complex Multi-Agent Foraging
+#
+# This configuration makes the foraging problem significantly MORE challenging:
+# - More agents (15 instead of 5) = increased competition and coordination complexity
+# - Fewer patches (8 instead of 20) = resource scarcity
+# - Larger world (60x60 instead of 20x20) = increased travel time and exploration
+# - More restrictive foraging parameters = harder feeding
+# - Longer episodes to allow strategic behavior to emerge
+#
+# Challenges introduced:
+# 1. High competition: 15 agents / 8 patches = 1.875 agent/patch ratio (vs 0.25 in easy mode)
+# 2. Resource scarcity: Must learn to rotate between patches efficiently
+# 3. Spatial complexity: Large world requires better navigation and memory
+# 4. Coordination: Agents must avoid overcrowding and share resources fairly
+# 5. Long-term planning: 3000 steps requires sustainable foraging strategies
+
+# World dimensions - 60x60 = 9x larger area than easy mode
+width: 60.0              # Increased from 20.0 - more exploration needed
+height: 60.0             # Increased from 20.0
+dt: 0.2                  # Time step (unchanged)
+
+# Agent configuration - MORE agents, MORE neighbors to track
+n_agents: 15             # Increased from 5 - much harder coordination
+k_neighbors: 8           # Increased from 4 - need to track more neighbors
+
+# Agent dynamics - slightly adjusted for larger world
+v_max: 1.8               # Increased from 1.5 - need faster movement in large world
+a_max: 0.25              # Increased from 0.2 - better acceleration
+turn_max: 0.35           # Increased from 0.3 - better maneuverability
+
+# Foraging parameters - MORE RESTRICTIVE
+feed_radius: 2.5         # Decreased from 4.0 - must be more precise
+c_max: 0.05              # Decreased from 0.08 - lower consumption rate
+
+# Flocking - tighter coordination needed
+d_safe: 0.8              # Increased from 0.6 - need more personal space
+
+# Resource patches - FEWER patches, SMALLER capacity
+S_max: 1.5               # Decreased from 3.0 - smaller patch capacity
+S_thr: 0.3               # Sustainability threshold (20% of S_max)
+regen_r: 0.15            # Decreased from 0.4 - MUCH slower regeneration
+n_patches: 8             # Decreased from 20 - significant resource scarcity
+
+# Episode settings - LONGER episodes for complex strategies
+episode_len: 3000        # Increased from 2000 - need more time for strategies
+
+# Difficulty analysis compared to easy mode:
+# 1. Agent/patch ratio: 15/8 = 1.875 (was 5/20 = 0.25) - 7.5x MORE competition
+# 2. World area: 3600 (was 400) - 9x LARGER area to explore
+# 3. Patch density: 8/3600 = 0.0022 patches/unit² (was 20/400 = 0.05) - 22.7x LESS dense
+# 4. Feed radius area: π×2.5² = 19.6 (was π×4² = 50.3) - 2.6x SMALLER feeding zone
+# 5. Total capacity per step: 8 patches × 0.05 c_max = 0.4 (was 20 × 0.08 = 1.6) - 4x LESS
+# 6. Regeneration: 0.15 (was 0.4) - 2.67x SLOWER
+# 7. Time budget: 3000 steps (was 2000) - 50% more time but 9x larger world
+#
+# Theoretical maximum intake: 15 agents × 3000 steps × 0.05 c_max = 2250 total
+# Realistic target for well-trained model: 40-60% efficiency (900-1350 intake)
+# This requires:
+# - Strategic patch rotation (avoiding depletion)
+# - Load balancing (distributing agents across patches)
+# - Efficient navigation (minimizing travel time)
+# - Cooperative behavior (avoiding overcrowding)
+# - Long-term memory (remembering patch locations and states)
