@@ -21,27 +21,27 @@ from env.gym_wrapper import FlockForageGymWrapper
 from metrics.fairness import gini
 
 
-# Medium Mode Configuration V2 (from env_medium_mode.yaml - UPDATED)
+# Medium Mode Configuration V4 (from env_medium_mode.yaml - UPDATED)
 MEDIUM_CONFIG = {
     "n_agents": 10,
-    "n_patches": 15,        # Updated from 12
-    "width": 28.0,          # Updated from 35
-    "height": 28.0,         # Updated from 35
+    "n_patches": 18,        # V4: 18 patches
+    "width": 23.0,          # V4: 23x23 world
+    "height": 23.0,         # V4: 23x23 world
     "episode_len": 2500,
-    "feed_radius": 3.5,     # Updated from 3.0
-    "c_max": 0.072,         # Updated from 0.065
-    "S_max": 2.5,           # Updated from 2.0
-    "regen_r": 0.30,        # Updated from 0.25
-    "k_neighbors": 6,       # Updated from 7
-    "v_max": 1.35,          # Updated from 1.5
-    "a_max": 0.18,          # Updated from 0.2
-    "turn_max": 0.28,       # Updated from 0.3
+    "feed_radius": 3.8,     # V4: 3.8
+    "c_max": 0.077,         # V4: 0.077
+    "S_max": 2.8,           # V4: 2.8
+    "regen_r": 0.37,        # V4: 0.37
+    "k_neighbors": 6,
+    "v_max": 1.35,
+    "a_max": 0.18,
+    "turn_max": 0.28,
     "d_safe": 0.8,
     "S_thr": 0.3,
     "dt": 0.2,
 }
 
-# Theoretical maximum: 10 agents × 2500 steps × 0.072 c_max = 1800 total
+# Theoretical maximum: 10 agents × 2500 steps × 0.077 c_max = 1925 total
 THEORETICAL_MAX = MEDIUM_CONFIG["n_agents"] * MEDIUM_CONFIG["episode_len"] * MEDIUM_CONFIG["c_max"]
 
 
@@ -62,10 +62,10 @@ def evaluate_model(model_path: str, n_episodes: int = 100, vecnormalize_path: st
     print("==" * 40)
     print()
     print(f"Model: {model_path}")
-    print(f"Configuration: Medium Mode V2 (10 agents, 15 patches, 28×28 world)")
+    print(f"Configuration: Medium Mode V4 (10 agents, 18 patches, 23×23 world)")
     print(f"Episodes: {n_episodes}")
     print(f"Theoretical max: {THEORETICAL_MAX:.0f} intake")
-    print(f"Target: 60-70% efficiency (1080-1260 intake)")
+    print(f"Target: 60-70% efficiency (1155-1348 intake)")
     print("==" * 40)
     print()
 
