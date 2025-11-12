@@ -1,7 +1,7 @@
 {
   "model_path": "models/ppo_final/final/model",
   "n_episodes": 100,
-  "evaluation_time_min": 3.4591726859410605,
+  "evaluation_time_min": 2.5976152459780377,
   "baseline_intake": 2307,
   "statistics": {
     "mean": 334.11503273010254,
