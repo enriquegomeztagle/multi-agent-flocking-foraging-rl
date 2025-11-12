@@ -301,6 +301,11 @@ class FlockForageParallel(ParallelEnv):
         2. Exponential proximity: Strong gradient towards food patches
         3. Approach reward: Encourage moving closer to food
         4. Light overcrowding penalty: Allow group foraging but prevent total clustering
+        5. FLOCKING REWARDS (NEW):
+           - Cohesion: Reward staying close to neighbors
+           - Alignment: Reward matching velocities with neighbors
+           - Separation: Reward maintaining safe distance
+           - Group foraging: Bonus for coordinated foraging
         """
         rewards = np.zeros(self.cfg.n_agents, dtype=np.float32)
 
@@ -346,6 +351,50 @@ class FlockForageParallel(ParallelEnv):
             agents_at_my_patch = np.sum(self._prev_patch_id == my_patch_id)
             if agents_at_my_patch > 3:
                 rewards[i] -= 0.5 * (agents_at_my_patch - 3)
+
+        # 5. FLOCKING REWARDS - Make flocking necessary for success
+        for i in range(self.cfg.n_agents):
+            # Get k nearest neighbors
+            distances = np.linalg.norm(self._pos - self._pos[i], axis=1)
+            distances[i] = np.inf  # Exclude self
+            neighbor_indices = np.argpartition(distances, min(self.cfg.k_neighbors, len(distances)-1))[:self.cfg.k_neighbors]
+            neighbor_distances = distances[neighbor_indices]
+
+            # Only compute flocking rewards if we have neighbors
+            if len(neighbor_indices) > 0:
+                # 5a. COHESION REWARD - Stay close to neighbors (not too far)
+                # Optimal distance: 3-8 units, penalty if too far
+                mean_neighbor_dist = np.mean(neighbor_distances[neighbor_distances < np.inf])
+                if mean_neighbor_dist < 15.0:  # Within reasonable range
+                    cohesion_reward = 1.5 * np.exp(-mean_neighbor_dist / 10.0)
+                    rewards[i] += cohesion_reward
+                else:
+                    # Penalty for being isolated
+                    rewards[i] -= 1.0
+
+                # 5b. ALIGNMENT REWARD - Match velocities with neighbors
+                # Reward when moving in similar direction
+                neighbor_vels = self._vel[neighbor_indices]
+                if len(neighbor_vels) > 0:
+                    mean_neighbor_vel = np.mean(neighbor_vels, axis=0)
+                    vel_similarity = np.dot(self._vel[i], mean_neighbor_vel)
+                    vel_similarity /= (np.linalg.norm(self._vel[i]) * np.linalg.norm(mean_neighbor_vel) + 1e-6)
+                    alignment_reward = 1.0 * max(0, vel_similarity)  # Reward positive alignment
+                    rewards[i] += alignment_reward
+
+                # 5c. SEPARATION REWARD - Maintain safe distance
+                # Penalize being too close to neighbors
+                too_close = neighbor_distances < self.cfg.d_safe
+                if np.any(too_close):
+                    separation_penalty = -2.0 * np.sum(too_close)
+                    rewards[i] += separation_penalty
+
+                # 5d. GROUP FORAGING BONUS - Reward coordinated foraging
+                # Bonus if neighbors are also feeding or near food
+                neighbors_feeding = intake[neighbor_indices] > 0
+                if intake[i] > 0 and np.any(neighbors_feeding):
+                    group_bonus = 5.0 * (np.sum(neighbors_feeding) / len(neighbor_indices))
+                    rewards[i] += group_bonus
 
         return {a: float(rewards[i]) for i, a in enumerate(self.agents)}
 
