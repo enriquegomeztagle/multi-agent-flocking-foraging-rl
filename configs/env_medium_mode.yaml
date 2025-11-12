@@ -4,17 +4,17 @@
 # training challenge before attempting hard mode.
 #
 # PROGRESSION:
-# Easy Mode:   5 agents, 20 patches, 20×20 world → 85.45% efficiency ✅
-# Medium Mode: 10 agents, 15 patches, 28×28 world → Target: 60-70% efficiency
+# Easy Mode:   5 agents, 20 patches, 20×20 world → 87.22% efficiency ✅ (with flocking)
+# Medium Mode: 10 agents, 18 patches, 23×23 world → Target: 60-70% efficiency
 # Hard Mode:   15 agents, 8 patches, 60×60 world → 4.89% efficiency (too hard!) ⚠️
 #
 # KEY INCREMENTAL CHANGES FROM EASY MODE:
 # - Agents: 5 → 10 (2x increase, manageable)
-# - Patches: 20 → 15 (25% reduction, moderate scarcity)
-# - World: 20×20 → 28×28 (1.96x area, moderate exploration)
-# - Competition: 0.25 → 0.67 agents/patch (2.7x, still <1)
+# - Patches: 20 → 18 (10% reduction, minimal scarcity)
+# - World: 20×20 → 23×23 (1.32x area, minimal exploration challenge)
+# - Competition: 0.25 → 0.56 agents/patch (2.2x, still <1)
 #
-# UPDATED: Made significantly easier based on evaluation results (was 34% efficiency)
+# UPDATED V4: VERY close to easy mode params + flocking rewards active
 
 # ============================================================================
 # ENVIRONMENT PARAMETERS
@@ -22,11 +22,11 @@
 
 # Number of agents and resource patches
 n_agents: 10        # Easy: 5 | Medium: 10 | Hard: 15
-n_patches: 15       # Easy: 20 | Medium: 15 | Hard: 8 (increased from 12)
+n_patches: 18       # Easy: 20 | Medium: 18 | Hard: 8 (increased from 17)
 
 # World dimensions
-width: 28.0         # Easy: 20 | Medium: 28 | Hard: 60 (reduced from 35)
-height: 28.0        # Easy: 20 | Medium: 28 | Hard: 60 (reduced from 35)
+width: 23.0         # Easy: 20 | Medium: 23 | Hard: 60 (reduced from 25)
+height: 23.0        # Easy: 20 | Medium: 23 | Hard: 60 (reduced from 25)
 
 # Episode length (simulation steps)
 episode_len: 2500   # Easy: 2000 | Medium: 2500 | Hard: 3000
@@ -36,16 +36,16 @@ episode_len: 2500   # Easy: 2000 | Medium: 2500 | Hard: 3000
 # ============================================================================
 
 # Feeding radius - agents can consume from patches within this distance
-feed_radius: 3.5    # Easy: 4.0 | Medium: 3.5 | Hard: 2.5 (increased from 3.0)
+feed_radius: 3.8    # Easy: 4.0 | Medium: 3.8 | Hard: 2.5 (increased from 3.7)
 
 # Maximum consumption rate per step
-c_max: 0.072        # Easy: 0.08 | Medium: 0.072 | Hard: 0.05 (increased from 0.065)
+c_max: 0.077        # Easy: 0.08 | Medium: 0.077 | Hard: 0.05 (increased from 0.075)
 
 # Maximum patch nutrient capacity
-S_max: 2.5          # Easy: 3.0 | Medium: 2.5 | Hard: 1.5 (increased from 2.0)
+S_max: 2.8          # Easy: 3.0 | Medium: 2.8 | Hard: 1.5 (increased from 2.7)
 
 # Patch regeneration rate
-regen_r: 0.30       # Easy: 0.4 | Medium: 0.30 | Hard: 0.15 (increased from 0.25)
+regen_r: 0.37       # Easy: 0.4 | Medium: 0.37 | Hard: 0.15 (increased from 0.35)
 
 # ============================================================================
 # FLOCKING PARAMETERS
@@ -78,40 +78,50 @@ dt: 0.2             # Consistent across all modes
 #
 # Agent-to-Patch Ratio:
 # - Easy:   5/20  = 0.25 agents per patch (low competition)
-# - Medium: 10/15 = 0.67 agents per patch (moderate competition) ⬅ IMPROVED
+# - Medium: 10/18 = 0.56 agents per patch (moderate competition) ⬅ VERY CLOSE TO EASY
 # - Hard:   15/8  = 1.875 agents per patch (high competition)
 #
 # Patch Density (patches per unit²):
 # - Easy:   20/400 = 0.050 patches/unit²
-# - Medium: 15/784 = 0.019 patches/unit² (2.6x less dense) ⬅ IMPROVED
+# - Medium: 18/529 = 0.034 patches/unit² (1.47x less dense) ⬅ VERY CLOSE TO EASY
 # - Hard:   8/3,600 = 0.002 patches/unit² (22x less dense)
 #
 # World Area:
 # - Easy:   400 unit²
-# - Medium: 784 unit² (1.96x larger) ⬅ IMPROVED
+# - Medium: 529 unit² (1.32x larger) ⬅ VERY CLOSE TO EASY
 # - Hard:   3,600 unit² (9x larger)
 #
 # Feed Zone Area:
 # - Easy:   π × 4.0² = 50.3 units²
-# - Medium: π × 3.5² = 38.5 units² (1.3x smaller) ⬅ IMPROVED
+# - Medium: π × 3.8² = 45.4 units² (1.1x smaller) ⬅ VERY CLOSE TO EASY
 # - Hard:   π × 2.5² = 19.6 units² (2.6x smaller)
 #
 # Theoretical Maximum Intake:
-# - Easy:   5 × 2000 × 0.08 = 800 (achieved ~1,925 with regeneration!)
-# - Medium: 10 × 2500 × 0.072 = 1,800 total ⬅ INCREASED
+# - Easy:   5 × 2000 × 0.08 = 800 (achieved 87% with flocking!)
+# - Medium: 10 × 2500 × 0.077 = 1,925 total ⬅ INCREASED
 # - Hard:   15 × 3000 × 0.05 = 2,250 total
 #
-# EXPECTED PERFORMANCE (REVISED):
-# With the easier configuration, medium mode should achieve:
-# - 50-60% efficiency: 900-1,080 intake (baseline)
-# - 60-70% efficiency: 1,080-1,260 intake (target) ✅
-# - 70%+ efficiency: 1,260+ intake (excellent)
+# EXPECTED PERFORMANCE (V4 - WITH FLOCKING REWARDS):
+# With parameters VERY close to easy mode + flocking rewards active:
+# - 50-60% efficiency: 963-1,155 intake (baseline)
+# - 60-70% efficiency: 1,155-1,348 intake (target) ✅
+# - 70-80% efficiency: 1,348-1,540 intake (excellent)
+# - 80%+ efficiency: 1,540+ intake (exceptional, like easy mode!)
 #
-# CHANGES FROM PREVIOUS VERSION (34% actual → 60-70% target):
-# ✅ More patches: 12 → 15 (+25% resources)
-# ✅ Smaller world: 35×35 → 28×28 (-36% area, easier navigation)
-# ✅ Larger feed radius: 3.0 → 3.5 (+36% feed area)
-# ✅ Higher consumption: 0.065 → 0.072 (+11% intake rate)
-# ✅ More capacity: 2.0 → 2.5 (+25% patch capacity)
-# ✅ Faster regen: 0.25 → 0.30 (+20% regeneration)
-# ✅ Slightly slower movement (easier control)
+# CHANGES FROM V3 (in progress):
+# ✅ More patches: 17 → 18 (+6% resources)
+# ✅ Smaller world: 25×25 → 23×23 (-15% area, much easier navigation)
+# ✅ Larger feed radius: 3.7 → 3.8 (+5% feed area)
+# ✅ Higher consumption: 0.075 → 0.077 (+3% intake rate)
+# ✅ More capacity: 2.7 → 2.8 (+4% patch capacity)
+# ✅ Faster regen: 0.35 → 0.37 (+6% regeneration)
+# ✅ Flocking rewards ACTIVE (cohesion, alignment, separation, group bonus)
+#
+# CUMULATIVE CHANGES FROM V1 (34% actual):
+# ✅ More patches: 12 → 18 (+50% resources!)
+# ✅ Smaller world: 35×35 → 23×23 (-57% area!)
+# ✅ Larger feed radius: 3.0 → 3.8 (+27% feed area)
+# ✅ Higher consumption: 0.065 → 0.077 (+18% intake rate)
+# ✅ More capacity: 2.0 → 2.8 (+40% patch capacity)
+# ✅ Faster regen: 0.25 → 0.37 (+48% regeneration)
+# ✅ Flocking rewards added (4 new components)
