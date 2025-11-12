@@ -84,7 +84,8 @@ def evaluate_model(model_path: str, n_episodes: int = 100):
         # Run episode
         for step in range(EASY_CONFIG["episode_len"]):
             obs_array = np.array([obs[agent] for agent in env.agents])
-            action, _ = model.predict(obs_array, deterministic=True)
+            obs_flat = obs_array.flatten()  # Flatten to match training shape
+            action, _ = model.predict(obs_flat, deterministic=True)
             action_dict = {agent: int(action[i]) for i, agent in enumerate(env.agents)}
 
             obs, rew, terms, truncs, _ = env.step(action_dict)
