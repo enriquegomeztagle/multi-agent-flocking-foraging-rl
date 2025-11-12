@@ -1,0 +1,110 @@
+# Medium Mode Configuration for Multi-Agent Flocking and Foraging
+#
+# This is a GRADUAL difficulty increase from easy mode, providing an intermediate
+# training challenge before attempting hard mode.
+#
+# PROGRESSION:
+# Easy Mode:   5 agents, 20 patches, 20×20 world → 85.45% efficiency ✅
+# Medium Mode: 10 agents, 12 patches, 35×35 world → Target: 50-70% efficiency
+# Hard Mode:   15 agents, 8 patches, 60×60 world → 4.89% efficiency (too hard!) ⚠️
+#
+# KEY INCREMENTAL CHANGES FROM EASY MODE:
+# - Agents: 5 → 10 (2x increase, manageable)
+# - Patches: 20 → 12 (40% reduction, introduces scarcity)
+# - World: 20×20 → 35×35 (3x area, more exploration)
+# - Competition: 0.25 → 0.83 agents/patch (3.3x, still <1)
+
+# ============================================================================
+# ENVIRONMENT PARAMETERS
+# ============================================================================
+
+# Number of agents and resource patches
+n_agents: 10        # Easy: 5 | Medium: 10 | Hard: 15
+n_patches: 12       # Easy: 20 | Medium: 12 | Hard: 8
+
+# World dimensions
+width: 35.0         # Easy: 20 | Medium: 35 | Hard: 60
+height: 35.0        # Easy: 20 | Medium: 35 | Hard: 60
+
+# Episode length (simulation steps)
+episode_len: 2500   # Easy: 2000 | Medium: 2500 | Hard: 3000
+
+# ============================================================================
+# FORAGING PARAMETERS
+# ============================================================================
+
+# Feeding radius - agents can consume from patches within this distance
+feed_radius: 3.0    # Easy: 4.0 | Medium: 3.0 | Hard: 2.5
+
+# Maximum consumption rate per step
+c_max: 0.065        # Easy: 0.08 | Medium: 0.065 | Hard: 0.05
+
+# Maximum patch nutrient capacity
+S_max: 2.0          # Easy: 3.0 | Medium: 2.0 | Hard: 1.5
+
+# Patch regeneration rate
+regen_r: 0.25       # Easy: 0.4 | Medium: 0.25 | Hard: 0.15
+
+# ============================================================================
+# FLOCKING PARAMETERS
+# ============================================================================
+
+# Number of neighbors for flocking calculations
+k_neighbors: 7      # Easy: 5 | Medium: 7 | Hard: 8
+
+# Maximum velocity
+v_max: 1.5          # Easy: 1.2 | Medium: 1.5 | Hard: 1.8
+
+# Maximum acceleration
+a_max: 0.2          # Easy: 0.15 | Medium: 0.2 | Hard: 0.25
+
+# Maximum turn rate
+turn_max: 0.3       # Easy: 0.25 | Medium: 0.3 | Hard: 0.35
+
+# Safety distance (collision avoidance)
+d_safe: 0.8         # Consistent across all modes
+
+# Hunger threshold (when agents start seeking food)
+S_thr: 0.3          # Consistent across all modes
+
+# Time step
+dt: 0.2             # Consistent across all modes
+
+# ============================================================================
+# DIFFICULTY ANALYSIS
+# ============================================================================
+#
+# Agent-to-Patch Ratio:
+# - Easy:   5/20  = 0.25 agents per patch (low competition)
+# - Medium: 10/12 = 0.83 agents per patch (moderate competition)
+# - Hard:   15/8  = 1.875 agents per patch (high competition)
+#
+# Patch Density (patches per unit²):
+# - Easy:   20/400   = 0.050 patches/unit²
+# - Medium: 12/1,225 = 0.010 patches/unit² (5x less dense)
+# - Hard:   8/3,600  = 0.002 patches/unit² (22x less dense)
+#
+# World Area:
+# - Easy:   400 unit²
+# - Medium: 1,225 unit² (3x larger)
+# - Hard:   3,600 unit² (9x larger)
+#
+# Feed Zone Area:
+# - Easy:   π × 4.0² = 50.3 units²
+# - Medium: π × 3.0² = 28.3 units² (1.8x smaller)
+# - Hard:   π × 2.5² = 19.6 units² (2.6x smaller)
+#
+# Theoretical Maximum Intake:
+# - Easy:   5 × 2000 × 0.08 = 800 (achieved ~1,925 with regeneration!)
+# - Medium: 10 × 2500 × 0.065 = 1,625 total
+# - Hard:   15 × 3000 × 0.05 = 2,250 total
+#
+# EXPECTED PERFORMANCE:
+# With proper training (1-2M timesteps), medium mode should achieve:
+# - 50-60% efficiency: 812-975 intake (baseline)
+# - 60-70% efficiency: 975-1,138 intake (good)
+# - 70%+ efficiency: 1,138+ intake (excellent)
+#
+# This is a much more achievable target than hard mode, while still
+# challenging the agents to coordinate with 2x more agents and 40%
+# fewer patches than easy mode.
