@@ -5,14 +5,16 @@
 #
 # PROGRESSION:
 # Easy Mode:   5 agents, 20 patches, 20×20 world → 85.45% efficiency ✅
-# Medium Mode: 10 agents, 12 patches, 35×35 world → Target: 50-70% efficiency
+# Medium Mode: 10 agents, 15 patches, 28×28 world → Target: 60-70% efficiency
 # Hard Mode:   15 agents, 8 patches, 60×60 world → 4.89% efficiency (too hard!) ⚠️
 #
 # KEY INCREMENTAL CHANGES FROM EASY MODE:
 # - Agents: 5 → 10 (2x increase, manageable)
-# - Patches: 20 → 12 (40% reduction, introduces scarcity)
-# - World: 20×20 → 35×35 (3x area, more exploration)
-# - Competition: 0.25 → 0.83 agents/patch (3.3x, still <1)
+# - Patches: 20 → 15 (25% reduction, moderate scarcity)
+# - World: 20×20 → 28×28 (1.96x area, moderate exploration)
+# - Competition: 0.25 → 0.67 agents/patch (2.7x, still <1)
+#
+# UPDATED: Made significantly easier based on evaluation results (was 34% efficiency)
 
 # ============================================================================
 # ENVIRONMENT PARAMETERS
@@ -20,11 +22,11 @@
 
 # Number of agents and resource patches
 n_agents: 10        # Easy: 5 | Medium: 10 | Hard: 15
-n_patches: 12       # Easy: 20 | Medium: 12 | Hard: 8
+n_patches: 15       # Easy: 20 | Medium: 15 | Hard: 8 (increased from 12)
 
 # World dimensions
-width: 35.0         # Easy: 20 | Medium: 35 | Hard: 60
-height: 35.0        # Easy: 20 | Medium: 35 | Hard: 60
+width: 28.0         # Easy: 20 | Medium: 28 | Hard: 60 (reduced from 35)
+height: 28.0        # Easy: 20 | Medium: 28 | Hard: 60 (reduced from 35)
 
 # Episode length (simulation steps)
 episode_len: 2500   # Easy: 2000 | Medium: 2500 | Hard: 3000
@@ -34,32 +36,32 @@ episode_len: 2500   # Easy: 2000 | Medium: 2500 | Hard: 3000
 # ============================================================================
 
 # Feeding radius - agents can consume from patches within this distance
-feed_radius: 3.0    # Easy: 4.0 | Medium: 3.0 | Hard: 2.5
+feed_radius: 3.5    # Easy: 4.0 | Medium: 3.5 | Hard: 2.5 (increased from 3.0)
 
 # Maximum consumption rate per step
-c_max: 0.065        # Easy: 0.08 | Medium: 0.065 | Hard: 0.05
+c_max: 0.072        # Easy: 0.08 | Medium: 0.072 | Hard: 0.05 (increased from 0.065)
 
 # Maximum patch nutrient capacity
-S_max: 2.0          # Easy: 3.0 | Medium: 2.0 | Hard: 1.5
+S_max: 2.5          # Easy: 3.0 | Medium: 2.5 | Hard: 1.5 (increased from 2.0)
 
 # Patch regeneration rate
-regen_r: 0.25       # Easy: 0.4 | Medium: 0.25 | Hard: 0.15
+regen_r: 0.30       # Easy: 0.4 | Medium: 0.30 | Hard: 0.15 (increased from 0.25)
 
 # ============================================================================
 # FLOCKING PARAMETERS
 # ============================================================================
 
 # Number of neighbors for flocking calculations
-k_neighbors: 7      # Easy: 5 | Medium: 7 | Hard: 8
+k_neighbors: 6      # Easy: 5 | Medium: 6 | Hard: 8 (reduced from 7)
 
 # Maximum velocity
-v_max: 1.5          # Easy: 1.2 | Medium: 1.5 | Hard: 1.8
+v_max: 1.35         # Easy: 1.2 | Medium: 1.35 | Hard: 1.8 (reduced from 1.5)
 
 # Maximum acceleration
-a_max: 0.2          # Easy: 0.15 | Medium: 0.2 | Hard: 0.25
+a_max: 0.18         # Easy: 0.15 | Medium: 0.18 | Hard: 0.25 (reduced from 0.2)
 
 # Maximum turn rate
-turn_max: 0.3       # Easy: 0.25 | Medium: 0.3 | Hard: 0.35
+turn_max: 0.28      # Easy: 0.25 | Medium: 0.28 | Hard: 0.35 (reduced from 0.3)
 
 # Safety distance (collision avoidance)
 d_safe: 0.8         # Consistent across all modes
@@ -76,35 +78,40 @@ dt: 0.2             # Consistent across all modes
 #
 # Agent-to-Patch Ratio:
 # - Easy:   5/20  = 0.25 agents per patch (low competition)
-# - Medium: 10/12 = 0.83 agents per patch (moderate competition)
+# - Medium: 10/15 = 0.67 agents per patch (moderate competition) ⬅ IMPROVED
 # - Hard:   15/8  = 1.875 agents per patch (high competition)
 #
 # Patch Density (patches per unit²):
-# - Easy:   20/400   = 0.050 patches/unit²
-# - Medium: 12/1,225 = 0.010 patches/unit² (5x less dense)
-# - Hard:   8/3,600  = 0.002 patches/unit² (22x less dense)
+# - Easy:   20/400 = 0.050 patches/unit²
+# - Medium: 15/784 = 0.019 patches/unit² (2.6x less dense) ⬅ IMPROVED
+# - Hard:   8/3,600 = 0.002 patches/unit² (22x less dense)
 #
 # World Area:
 # - Easy:   400 unit²
-# - Medium: 1,225 unit² (3x larger)
+# - Medium: 784 unit² (1.96x larger) ⬅ IMPROVED
 # - Hard:   3,600 unit² (9x larger)
 #
 # Feed Zone Area:
 # - Easy:   π × 4.0² = 50.3 units²
-# - Medium: π × 3.0² = 28.3 units² (1.8x smaller)
+# - Medium: π × 3.5² = 38.5 units² (1.3x smaller) ⬅ IMPROVED
 # - Hard:   π × 2.5² = 19.6 units² (2.6x smaller)
 #
 # Theoretical Maximum Intake:
 # - Easy:   5 × 2000 × 0.08 = 800 (achieved ~1,925 with regeneration!)
-# - Medium: 10 × 2500 × 0.065 = 1,625 total
+# - Medium: 10 × 2500 × 0.072 = 1,800 total ⬅ INCREASED
 # - Hard:   15 × 3000 × 0.05 = 2,250 total
 #
-# EXPECTED PERFORMANCE:
-# With proper training (1-2M timesteps), medium mode should achieve:
-# - 50-60% efficiency: 812-975 intake (baseline)
-# - 60-70% efficiency: 975-1,138 intake (good)
-# - 70%+ efficiency: 1,138+ intake (excellent)
+# EXPECTED PERFORMANCE (REVISED):
+# With the easier configuration, medium mode should achieve:
+# - 50-60% efficiency: 900-1,080 intake (baseline)
+# - 60-70% efficiency: 1,080-1,260 intake (target) ✅
+# - 70%+ efficiency: 1,260+ intake (excellent)
 #
-# This is a much more achievable target than hard mode, while still
-# challenging the agents to coordinate with 2x more agents and 40%
-# fewer patches than easy mode.
+# CHANGES FROM PREVIOUS VERSION (34% actual → 60-70% target):
+# ✅ More patches: 12 → 15 (+25% resources)
+# ✅ Smaller world: 35×35 → 28×28 (-36% area, easier navigation)
+# ✅ Larger feed radius: 3.0 → 3.5 (+36% feed area)
+# ✅ Higher consumption: 0.065 → 0.072 (+11% intake rate)
+# ✅ More capacity: 2.0 → 2.5 (+25% patch capacity)
+# ✅ Faster regen: 0.25 → 0.30 (+20% regeneration)
+# ✅ Slightly slower movement (easier control)
