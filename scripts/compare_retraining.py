@@ -1,18 +1,26 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Compare results before and after retraining.
 Shows improvement metrics for Hard and Medium modes.
 """
 
 import json
+import argparse
+import sys
 from pathlib import Path
+
+# Set UTF-8 encoding for Windows
+if sys.platform == 'win32':
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 def load_results(file_path):
     """Load evaluation results from JSON."""
     with open(file_path, 'r') as f:
         return json.load(f)
 
-def print_comparison():
+def print_comparison(mode='all'):
     """Print comparison of old vs new results."""
 
     print("=" * 90)
@@ -27,7 +35,7 @@ def print_comparison():
     medium_new = Path("results/medium_evaluation_3M.json")
 
     # Hard Mode comparison
-    if hard_old.exists() and hard_new.exists():
+    if (mode in ['all', 'hard']) and hard_old.exists() and hard_new.exists():
         print("🔴 HARD MODE - Reentrenamiento 2M → 4M steps")
         print("-" * 90)
 
@@ -81,7 +89,7 @@ def print_comparison():
         print()
 
     # Medium Mode comparison
-    if medium_old.exists() and medium_new.exists():
+    if (mode in ['all', 'medium']) and medium_old.exists() and medium_new.exists():
         print("🟡 MEDIUM MODE - Reentrenamiento 2M → 3M steps")
         print("-" * 90)
 
@@ -131,11 +139,12 @@ def print_comparison():
     print()
 
     # Summary
-    print("📈 RESUMEN FINAL")
-    print("=" * 90)
-    print()
+    if mode == 'all':
+        print("📈 RESUMEN FINAL")
+        print("=" * 90)
+        print()
 
-    if hard_old.exists() and hard_new.exists() and medium_old.exists() and medium_new.exists():
+    if mode == 'all' and hard_old.exists() and hard_new.exists() and medium_old.exists() and medium_new.exists():
         hard_data = load_results(hard_new)
         medium_data = load_results(medium_new)
 
@@ -162,13 +171,26 @@ def print_comparison():
         else:
             print("❌ Objetivos no alcanzados")
             print("   Reentrenamiento con más timesteps recomendado")
-    else:
+    elif mode == 'all':
         print("⚠️  No se encontraron todos los archivos de resultados")
         print("   Ejecuta el reentrenamiento primero:")
         print("   bash scripts/retrain_gpu.sh")
 
-    print()
-    print("=" * 90)
+    if mode == 'all':
+        print()
+        print("=" * 90)
 
 if __name__ == "__main__":
-    print_comparison()
+    parser = argparse.ArgumentParser(
+        description="Compare retraining results for Hard and/or Medium modes"
+    )
+    parser.add_argument(
+        '--mode',
+        type=str,
+        default='all',
+        choices=['all', 'hard', 'medium'],
+        help='Which mode to compare: all (default), hard, or medium'
+    )
+    args = parser.parse_args()
+
+    print_comparison(mode=args.mode)
