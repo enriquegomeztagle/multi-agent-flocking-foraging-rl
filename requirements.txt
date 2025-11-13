@@ -2,7 +2,9 @@ numpy>=1.26
 scipy>=1.11
 numba>=0.58
 torch>=2.2
-stable-baselines3>=2.3.0
+stable-baselines3[extra]>=2.3.0
+tqdm
+rich
 sb3-contrib>=2.3.0
 pettingzoo>=1.24.3
 supersuit>=3.9.0
