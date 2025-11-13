@@ -24,14 +24,18 @@ from metrics.fairness import gini
 
 # Load Hard Mode Configuration from YAML
 CONFIG_PATH = Path(__file__).parent.parent / "configs" / "env_hard.yaml"
-with open(CONFIG_PATH, 'r') as f:
+with open(CONFIG_PATH, "r") as f:
     HARD_CONFIG = yaml.safe_load(f)
 
 # Theoretical maximum: n_agents × episode_len × c_max
-THEORETICAL_MAX = HARD_CONFIG["n_agents"] * HARD_CONFIG["episode_len"] * HARD_CONFIG["c_max"]
+THEORETICAL_MAX = (
+    HARD_CONFIG["n_agents"] * HARD_CONFIG["episode_len"] * HARD_CONFIG["c_max"]
+)
 
 
-def evaluate_model(model_path: str, n_episodes: int = 100, vecnormalize_path: str = None):
+def evaluate_model(
+    model_path: str, n_episodes: int = 100, vecnormalize_path: str = None
+):
     """
     Evaluate trained model on hard configuration.
 
@@ -91,7 +95,11 @@ def evaluate_model(model_path: str, n_episodes: int = 100, vecnormalize_path: st
 
         # Get final metrics from underlying PettingZoo environment
         ep_intake = float(env.env._intake_total.sum())
-        gini_val = float(gini(env.env._intake_total)) if len(env.env._intake_total) > 0 else 0.0
+        gini_val = (
+            float(gini(env.env._intake_total))
+            if len(env.env._intake_total) > 0
+            else 0.0
+        )
 
         # Additional metrics
         agent_intakes = [float(x) for x in env.env._intake_total]
@@ -165,10 +173,18 @@ def evaluate_model(model_path: str, n_episodes: int = 100, vecnormalize_path: st
 
     # Count episodes by performance tier (relative to theoretical max)
     tiers = {
-        "excellent_70plus": len([e for e in all_episodes if e["efficiency_percent"] >= 70]),
-        "great_60_70": len([e for e in all_episodes if 60 <= e["efficiency_percent"] < 70]),
-        "good_50_60": len([e for e in all_episodes if 50 <= e["efficiency_percent"] < 60]),
-        "ok_40_50": len([e for e in all_episodes if 40 <= e["efficiency_percent"] < 50]),
+        "excellent_70plus": len(
+            [e for e in all_episodes if e["efficiency_percent"] >= 70]
+        ),
+        "great_60_70": len(
+            [e for e in all_episodes if 60 <= e["efficiency_percent"] < 70]
+        ),
+        "good_50_60": len(
+            [e for e in all_episodes if 50 <= e["efficiency_percent"] < 60]
+        ),
+        "ok_40_50": len(
+            [e for e in all_episodes if 40 <= e["efficiency_percent"] < 50]
+        ),
         "below_40": len([e for e in all_episodes if e["efficiency_percent"] < 40]),
     }
 
@@ -215,23 +231,35 @@ def evaluate_model(model_path: str, n_episodes: int = 100, vecnormalize_path: st
     print("==" * 40)
     print("PERFORMANCE TIERS (vs Theoretical Max)")
     print("==" * 40)
-    print(f"🏆 Excellent (≥70%):  {tiers['excellent_70plus']:3d} episodes ({tiers['excellent_70plus']/n_episodes*100:5.1f}%)")
-    print(f"🌟 Great (60-70%):    {tiers['great_60_70']:3d} episodes ({tiers['great_60_70']/n_episodes*100:5.1f}%)")
-    print(f"⭐ Good (50-60%):     {tiers['good_50_60']:3d} episodes ({tiers['good_50_60']/n_episodes*100:5.1f}%)")
-    print(f"   OK (40-50%):       {tiers['ok_40_50']:3d} episodes ({tiers['ok_40_50']/n_episodes*100:5.1f}%)")
-    print(f"   Below 40%:         {tiers['below_40']:3d} episodes ({tiers['below_40']/n_episodes*100:5.1f}%)")
+    print(
+        f"🏆 Excellent (≥70%):  {tiers['excellent_70plus']:3d} episodes ({tiers['excellent_70plus']/n_episodes*100:5.1f}%)"
+    )
+    print(
+        f"🌟 Great (60-70%):    {tiers['great_60_70']:3d} episodes ({tiers['great_60_70']/n_episodes*100:5.1f}%)"
+    )
+    print(
+        f"⭐ Good (50-60%):     {tiers['good_50_60']:3d} episodes ({tiers['good_50_60']/n_episodes*100:5.1f}%)"
+    )
+    print(
+        f"   OK (40-50%):       {tiers['ok_40_50']:3d} episodes ({tiers['ok_40_50']/n_episodes*100:5.1f}%)"
+    )
+    print(
+        f"   Below 40%:         {tiers['below_40']:3d} episodes ({tiers['below_40']/n_episodes*100:5.1f}%)"
+    )
     print("==" * 40)
     print()
 
-    # Performance assessment for medium mode
-    if stats['mean_efficiency'] >= 70.0:
-        print("🎉 🎉 🎉 EXCELLENT! Achieved 70%+ efficiency on MEDIUM MODE! 🎉 🎉 🎉")
-    elif stats['mean_efficiency'] >= 60.0:
-        print("✅ Great performance! 60%+ efficiency - ready for hard mode!")
-    elif stats['mean_efficiency'] >= 50.0:
-        print("⭐ Good performance! 50%+ efficiency shows strong coordination.")
-    elif stats['mean_efficiency'] >= 40.0:
-        print("📈 Moderate performance. The model is learning but needs improvement.")
+    # Performance assessment for hard mode
+    if stats["mean_efficiency"] >= 70.0:
+        print("🎉 🎉 🎉 EXCELLENT! Achieved 70%+ efficiency on HARD MODE! 🎉 🎉 🎉")
+    elif stats["mean_efficiency"] >= 60.0:
+        print(
+            "🌟 Outstanding! 60%+ efficiency - exceptional performance for hard mode!"
+        )
+    elif stats["mean_efficiency"] >= 50.0:
+        print("✅ Great performance! 50%+ efficiency - above target range (40-50%)!")
+    elif stats["mean_efficiency"] >= 40.0:
+        print("🎯 Target achieved! 40-50% efficiency meets hard mode expectations!")
     else:
         print("⚠️  Below 40% efficiency. Consider longer training or tuning.")
     print()
@@ -256,30 +284,32 @@ def evaluate_model(model_path: str, n_episodes: int = 100, vecnormalize_path: st
 
 def main():
     """Run hard mode evaluation."""
-    parser = argparse.ArgumentParser(description="Evaluate model on hard mode configuration")
+    parser = argparse.ArgumentParser(
+        description="Evaluate model on hard mode configuration"
+    )
     parser.add_argument(
         "--model",
         type=str,
         default="models/ppo_hard/final_model",
-        help="Path to trained PPO model (default: models/ppo_hard/final_model)"
+        help="Path to trained PPO model (default: models/ppo_hard/final_model)",
     )
     parser.add_argument(
         "--episodes",
         type=int,
         default=100,
-        help="Number of episodes to evaluate (default: 100)"
+        help="Number of episodes to evaluate (default: 100)",
     )
     parser.add_argument(
         "--output",
         type=str,
         default="results/hard_evaluation.json",
-        help="Output file path"
+        help="Output file path",
     )
     parser.add_argument(
         "--vecnormalize",
         type=str,
         default=None,
-        help="Path to VecNormalize stats (optional)"
+        help="Path to VecNormalize stats (optional)",
     )
 
     args = parser.parse_args()
@@ -289,14 +319,14 @@ def main():
         print(f"❌ Model not found: {args.model}.zip")
         print()
         print("Train the model first:")
-        print("  python -m train.train_ppo --config configs/env_hard.yaml --output models/ppo_hard")
+        print(
+            "  python -m train.train_ppo --config configs/env_hard.yaml --output models/ppo_hard"
+        )
         return
 
     # Run evaluation
     results = evaluate_model(
-        args.model,
-        n_episodes=args.episodes,
-        vecnormalize_path=args.vecnormalize
+        args.model, n_episodes=args.episodes, vecnormalize_path=args.vecnormalize
     )
 
     # Save results
