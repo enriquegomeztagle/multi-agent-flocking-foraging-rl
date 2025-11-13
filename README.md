@@ -15,7 +15,7 @@ This project investigates how **individual learning agents can achieve collectiv
 
 **Central Research Question:** Can multi-agent RL systems learn effective coordination strategies that scale from abundant to extremely scarce resources, including scenarios where agents outnumber resource patches?
 
-**Answer:** ✅ Yes. We validate 4 difficulty levels demonstrating smooth efficiency progression (87% → 73% → 46% → 37%), including a successful agents > patches scenario.
+**Answer:** ✅ Yes. We validate 4 difficulty levels demonstrating smooth efficiency progression (87% → 73% → 50% → 37%), including a successful agents > patches scenario.
 
 ---
 
@@ -25,7 +25,7 @@ This project investigates how **individual learning agents can achieve collectiv
 | ---------------- | ------ | ------- | ------ | -------------- | ---------------- | ------------- | ----------------------------- |
 | **Easy**   | 5      | 20      | 20×20 | 0.25           | **87.22%** | 1.5M (~30min) | [EASY_MODE.md](EASY_MODE.md)     |
 | **Medium** | 10     | 18      | 23×23 | 0.56           | **72.55%** | 2M (~90min)   | [MEDIUM_MODE.md](MEDIUM_MODE.md) |
-| **Hard**   | 10     | 15      | 28×28 | 0.67           | **45.90%** | 2M (~90min)   | [HARD_MODE.md](HARD_MODE.md)     |
+| **Hard**   | 10     | 15      | 28×28 | 0.67           | **49.86%** | 3M (~2.5h)   | [HARD_MODE.md](HARD_MODE.md)     |
 | **Expert** | 12     | 10      | 35×35 | **1.20** | **37.12%** | 3M (~120min)  | [EXPERT_MODE.md](EXPERT_MODE.md) |
 
 ### Scientific Contributions
@@ -47,7 +47,7 @@ Efficiency %
      70 ┤        ●●●●●  ← Medium (72.55%)
      60 ┤        ●●●●●
      50 ┤
-     40 ┤              ●●●● ← Hard (45.90%)
+     40 ┤              ●●●● ← Hard (49.86%)
      30 ┤                   ●●● ← Expert (37.12%)
      20 ┤                   ●●●
      10 ┤
@@ -59,8 +59,8 @@ Efficiency %
 **Efficiency Drops:**
 
 - Easy → Medium: -14.7pp (smooth progression)
-- Medium → Hard: -26.7pp (significant challenge increase)
-- Hard → Expert: -8.8pp (gradual, demonstrates robustness)
+- Medium → Hard: -22.7pp (significant challenge increase)
+- Hard → Expert: -12.7pp (gradual, demonstrates robustness)
 
 ---
 
@@ -80,11 +80,11 @@ Efficiency %
 - **Key Insight:** Coordination scales well despite 2x agents and fewer resources
 - **Details:** [MEDIUM_MODE.md](MEDIUM_MODE.md)
 
-### Hard Mode - High Competition (45.90% efficiency)
+### Hard Mode - High Competition (49.86% efficiency)
 
 - **Purpose:** Require sophisticated resource sharing under scarcity
 - **Configuration:** 10 agents, 15 patches, 28×28 world
-- **Key Insight:** Agents adapt to significant scarcity but show signs of stress
+- **Key Insight:** Retrained model (3M steps) successfully handles significant scarcity with good consistency
 - **Details:** [HARD_MODE.md](HARD_MODE.md)
 
 ### Expert Mode - Extreme Scarcity (37.12% efficiency) 🔥 NOVEL
@@ -179,7 +179,7 @@ python -m train.eval_easy --episodes 100
 # Medium Mode (72.55% efficiency)
 python -m train.eval_medium --episodes 100
 
-# Hard Mode (45.90% efficiency)
+# Hard Mode (49.86% efficiency)
 python -m train.eval_hard --episodes 100
 
 # Expert Mode (37.12% efficiency)
@@ -281,10 +281,10 @@ multi-agent-flocking-foraging-rl/
 | **S_max**             | 3.0              | 2.8              | 2.5              | 2.0              | -33%               |
 | **regen_r**           | 0.4              | 0.37             | 0.32             | 0.24             | -40%               |
 | **Theoretical Max**   | 800              | 1,925            | 1,750            | 1,740            | Variable           |
-| **Mean Intake**       | 697.76           | 1,396.58         | 803.28           | 645.81           | -                  |
-| **Efficiency**        | **87.22%** | **72.55%** | **45.90%** | **37.12%** | -57%               |
-| **Mean Gini**         | N/A              | 0.274            | 0.539            | 0.569            | Fairness decreases |
-| **Training Steps**    | 1.5M             | 2M               | 2M               | 3M               | 2x longer          |
+| **Mean Intake**       | 697.76           | 1,396.58         | 872.52           | 645.81           | -                  |
+| **Efficiency**        | **87.22%** | **72.55%** | **49.86%** | **37.12%** | -57%               |
+| **Mean Gini**         | N/A              | 0.274            | 0.482            | 0.569            | Fairness decreases |
+| **Training Steps**    | 1.5M             | 2M               | 3M               | 3M               | 2x longer          |
 
 ---
 
@@ -373,7 +373,7 @@ Detailed documentation for each difficulty level:
 
 - **[EASY_MODE.md](EASY_MODE.md)** - Baseline environment with abundant resources (87.22%)
 - **[MEDIUM_MODE.md](MEDIUM_MODE.md)** - Scaled coordination challenge (72.55%)
-- **[HARD_MODE.md](HARD_MODE.md)** - High competition environment (45.90%)
+- **[HARD_MODE.md](HARD_MODE.md)** - High competition environment (49.86%)
 - **[EXPERT_MODE.md](EXPERT_MODE.md)** - Extreme scarcity where agents > patches (37.12%)
 
 Each document includes:
