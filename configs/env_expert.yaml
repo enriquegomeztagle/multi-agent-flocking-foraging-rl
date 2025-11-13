@@ -1,0 +1,65 @@
+# Expert Mode Configuration - Targeting 15-25% Efficiency
+#
+# This is significantly harder than Hard Mode.
+#
+# KEY CHALLENGES:
+# - High agent/patch ratio (1.2 - intense competition)
+# - Very sparse patches (0.0082/unit² - hard to find)
+# - Large world requiring coordination
+# - Reduced resources (lower feed radius, consumption, capacity, regen)
+
+# ============================================================================
+# ENVIRONMENT PARAMETERS
+# ============================================================================
+
+# Number of agents and resource patches
+n_agents: 12        # more agents = more coordination needed
+n_patches: 10       # fewer patches = intense competition
+
+# World dimensions
+width: 35.0         # large world = exploration challenge
+height: 35.0
+
+# Episode length (simulation steps)
+episode_len: 2500
+
+# ============================================================================
+# FORAGING PARAMETERS
+# ============================================================================
+
+# Feeding radius - agents can consume from patches within this distance
+feed_radius: 2.8    # smaller = harder to reach patches
+
+# Maximum consumption rate per step
+c_max: 0.058        # lower = slower intake
+
+# Maximum patch nutrient capacity
+S_max: 2.0          # lower = patches deplete faster
+
+# Patch regeneration rate
+regen_r: 0.24       # slower = harder to sustain
+
+# ============================================================================
+# FLOCKING PARAMETERS
+# ============================================================================
+
+# Number of neighbors for flocking calculations
+k_neighbors: 7      # more neighbors needed for coordination
+
+# Maximum velocity
+v_max: 1.5          # faster = better exploration
+
+# Maximum acceleration
+a_max: 0.20         # more responsive
+
+# Maximum turn rate
+turn_max: 0.30      # better maneuvering
+
+# Safety distance (collision avoidance)
+d_safe: 0.8         # safety distance
+
+# Hunger threshold (when agents start seeking food)
+S_thr: 0.3          # hunger threshold
+
+# Time step
+dt: 0.2             # time step
