@@ -1,0 +1,16 @@
+S_max: 2.8
+S_thr: 0.3
+a_max: 0.18
+c_max: 0.077
+d_safe: 0.8
+dt: 0.2
+episode_len: 2500
+feed_radius: 3.8
+height: 23.0
+k_neighbors: 6
+n_agents: 10
+n_patches: 18
+regen_r: 0.37
+turn_max: 0.28
+v_max: 1.35
+width: 23.0
