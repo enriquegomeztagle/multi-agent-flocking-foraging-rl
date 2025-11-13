@@ -1,0 +1,41 @@
+# Easy Mode Configuration for 70%+ Efficiency Target
+#
+# This configuration makes the foraging problem easy:
+# - Few agents (5) = less competition
+# - More patches (20) = more resources
+# - Smaller world (20x20) = less travel time
+# - Better resource parameters = easier feeding
+#
+# Expected theoretical max: ~800 intake (5 agents × 2000 steps × 0.08 c_max)
+# Expected realistic performance: 500-600 intake with good policy
+# Target: 70%+ of recalculated baseline
+
+# World dimensions
+width: 20.0              # less travel distance
+height: 20.0             # less travel distance
+dt: 0.2                  # Time step
+
+# Agent configuration
+n_agents: 5              # easier coordination
+k_neighbors: 4           # 4 for 5 agents
+
+# Agent dynamics
+v_max: 1.5               # Max velocity
+a_max: 0.2               # Max acceleration
+turn_max: 0.3            # Max turn rate
+
+# Foraging parameters
+feed_radius: 4.0         # easier to feed
+c_max: 0.08              # max intake per step
+
+# Flocking
+d_safe: 0.6              # Safety distance
+
+# Resource patches
+S_max: 3.0               # max patch capacity
+S_thr: 0.6               # Sustainability threshold (60% of S_max)
+regen_r: 0.4             # faster regeneration
+n_patches: 20            # more food sources
+
+# Episode settings
+episode_len: 2000
