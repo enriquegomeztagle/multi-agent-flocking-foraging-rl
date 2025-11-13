@@ -1,0 +1,68 @@
+# Medium Mode Configuration - Got 72.55% efficiency
+#
+# KEY CHALLENGES:
+# 1. Double agents (5→10)
+# 2. Fewer patches (20→18)
+# 3. Larger world (32%)
+# 4. Smaller feed radius
+# 5. Slower consumption rate
+# 6. Slower regeneration rate
+# 7. Complex flocking
+# 8. Agent-to-patch ratio
+# 9. Patch density
+
+# ============================================================================
+# ENVIRONMENT PARAMETERS
+# ============================================================================
+
+# Number of agents and resource patches
+n_agents: 10
+n_patches: 18
+
+# World dimensions
+width: 23.0
+height: 23.0
+
+# Episode length (simulation steps)
+episode_len: 2500
+
+# ============================================================================
+# FORAGING PARAMETERS
+# ============================================================================
+
+# Feeding radius - agents can consume from patches within this distance
+feed_radius: 3.8
+
+# Maximum consumption rate per step
+c_max: 0.077
+
+# Maximum patch nutrient capacity
+S_max: 2.8
+
+# Patch regeneration rate
+regen_r: 0.37
+
+# ============================================================================
+# FLOCKING PARAMETERS
+# ============================================================================
+
+# Number of neighbors for flocking calculations
+k_neighbors: 6
+
+# Maximum velocity
+v_max: 1.35
+
+# Maximum acceleration
+a_max: 0.18
+
+# Maximum turn rate
+turn_max: 0.28
+
+# Safety distance (collision avoidance)
+d_safe: 0.8
+
+# Hunger threshold (when agents start seeking food)
+S_thr: 0.3
+
+# Time step
+dt: 0.2
