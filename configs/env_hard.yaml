@@ -1,0 +1,70 @@
+# Hard Mode Configuration - Got 45.90% efficiency
+#
+# KEY CHALLENGES:
+# 1. Fewer patches (18→15)
+# 2. Much larger world (48%)
+# 3. Smaller feed radius
+# 4. Slower consumption rate
+# 5. Lower patch capacity
+# 6. Slower regeneration rate
+# 7. Worse agent-to-patch ratio
+# 8. Much sparser patches
+# 9. Lower theoretical maximum
+# 10. Harder resource competition
+
+
+# ============================================================================
+# ENVIRONMENT PARAMETERS
+# ============================================================================
+
+# Number of agents and resource patches
+n_agents: 10
+n_patches: 15
+
+# World dimensions
+width: 28.0 
+height: 28.0 
+
+# Episode length (simulation steps)
+episode_len: 2500
+
+# ============================================================================
+# FORAGING PARAMETERS
+# ============================================================================
+
+# Feeding radius
+feed_radius: 3.5
+
+# Maximum consumption rate per step
+c_max: 0.070
+
+# Maximum patch nutrient capacity
+S_max: 2.5
+
+# Patch regeneration rate
+regen_r: 0.32
+
+# ============================================================================
+# FLOCKING PARAMETERS
+# ============================================================================
+
+# Number of neighbors for flocking calculations
+k_neighbors: 6
+
+# Maximum velocity
+v_max: 1.35
+
+# Maximum acceleration
+a_max: 0.18
+
+# Maximum turn rate
+turn_max: 0.28
+
+# Safety distance (collision avoidance)
+d_safe: 0.8
+
+# Hunger threshold
+S_thr: 0.3
+
+# Time step
+dt: 0.2
