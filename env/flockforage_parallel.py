@@ -82,6 +82,10 @@ class FlockForageParallel(ParallelEnv):
         self.render_mode = render_mode
         self.agents = [f"agent_{i}" for i in range(cfg.n_agents)]
         self.possible_agents = list(self.agents)
+        
+        # For rendering
+        self._fig = None
+        self._ax = None
 
         self._rng = np.random.default_rng()
         self._t = 0
@@ -399,9 +403,52 @@ class FlockForageParallel(ParallelEnv):
         return {a: float(rewards[i]) for i, a in enumerate(self.agents)}
 
     def render(self, mode="human"):
-        """Render environment (not implemented)."""
-        pass
+        """
+        Render environment.
+        
+        Args:
+            mode: "human" for interactive display, "rgb_array" for array return
+        """
+        from .render import render_frame, render_to_rgb_array
+        
+        if mode == "rgb_array":
+            return render_to_rgb_array(
+                self._pos,
+                self._vel,
+                self._patches.centers,
+                self._patches.stock,
+                self.cfg.S_max,
+                self.cfg.width,
+                self.cfg.height,
+                self.cfg.feed_radius
+            )
+        elif mode == "human":
+            import matplotlib.pyplot as plt
+            
+            if self._fig is None:
+                self._fig, self._ax = plt.subplots(figsize=(10, 10))
+            
+            render_frame(
+                self._pos,
+                self._vel,
+                self._patches.centers,
+                self._patches.stock,
+                self.cfg.S_max,
+                self.cfg.width,
+                self.cfg.height,
+                self.cfg.feed_radius,
+                ax=self._ax
+            )
+            
+            plt.pause(0.01)
+            return self._ax
+        else:
+            raise ValueError(f"Unknown render mode: {mode}")
 
     def close(self):
         """Close environment."""
-        pass
+        if self._fig is not None:
+            import matplotlib.pyplot as plt
+            plt.close(self._fig)
+            self._fig = None
+            self._ax = None
