@@ -207,3 +207,10 @@ __marimo__/
 
 # Temporary files
 .DS_Store
+
+# Project-specific: ML training artifacts
+models/*/checkpoints/
+models/*/best_model/
+models/*/tensorboard/
+models/*/eval_logs/
+*.log
