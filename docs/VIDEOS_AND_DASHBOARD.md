@@ -19,11 +19,11 @@ The dependencies are already in `requirements.txt`:
 ```bash
 PYTHONPATH=. python scripts/generate_video.py \
   --type rl \
-  --model models/ppo_easy_mode/best_model/best_model \
-  --config configs/env_easy_mode.yaml \
-  --output videos/easy_mode_rl.mp4 \
+  --model models/ppo_easy/final_model.zip \
+  --config configs/env_easy.yaml \
+  --output videos/easy_final.mp4 \
   --episodes 1 \
-  --fps 10
+  --fps 20
 ```
 
 #### 2. Generate video from Baseline Boids
@@ -31,10 +31,10 @@ PYTHONPATH=. python scripts/generate_video.py \
 ```bash
 PYTHONPATH=. python scripts/generate_video.py \
   --type baseline \
-  --config configs/env_easy_mode.yaml \
-  --output videos/easy_mode_baseline.mp4 \
+  --config configs/env_easy.yaml \
+  --output videos/baseline_boids.mp4 \
   --episodes 1 \
-  --fps 10
+  --fps 20
 ```
 
 ### Parameters
@@ -91,7 +91,8 @@ The videos show:
 - **Resource patches** with colors according to stock level:
   - Green: high stock
   - Red: low stock
-- **Trajectories** (optional, not implemented in this version)
+- **Real RL behavior**: Agents use trained neural networks with observation normalization for natural movement
+- **Natural movement**: Proper VecNormalize loading ensures agents accelerate, turn, and coordinate naturally
 
 ## 📊 Interactive Dashboard with Streamlit
 
@@ -272,7 +273,7 @@ pip install scipy
 
 - Verify that `imageio-ffmpeg` is installed
 - Make sure the output directory exists or can be created
-- Check that the model and config are valid
+- Check that the model and config paths are valid
 
 ### Dashboard not loading files
 
@@ -290,8 +291,10 @@ pip install scipy
 
 ### Video Generation
 
-- Videos are saved in MP4 format
-- Video generation uses matplotlib for rendering and imageio for encoding
+- Videos are saved in MP4 format using matplotlib rendering and imageio encoding
+- RL models use observation normalization (VecNormalize) for consistent behavior
+  - Stochastic action sampling provides natural movement variation
+Models automatically load observation normalization from `vecnormalize.pkl`
 
 ### Dashboard
 
