@@ -17,7 +17,27 @@ echo "==========================================================================
 echo ""
 
 # Check if CUDA is available
-python3 -c "import torch; assert torch.cuda.is_available(), '❌ CUDA not available!'; print(f'✅ GPU detectada: {torch.cuda.get_device_name(0)}')"
+if ! python -c "import torch; print(torch.cuda.is_available())" 2>/dev/null | grep -q "True"; then
+    echo "❌ CUDA not available!"
+    echo ""
+    echo "Diagnóstico:"
+    python -c "import torch; print(f'  • PyTorch version: {torch.__version__}'); print(f'  • CUDA available: {torch.cuda.is_available()}'); print(f'  • CUDA version: {torch.version.cuda if torch.version.cuda else \"N/A\"}')" 2>&1 || echo "  • Error checking PyTorch"
+    echo ""
+    echo "Solución:"
+    echo "  Tienes PyTorch CPU-only instalado. Para usar GPU, instala PyTorch con CUDA:"
+    echo "  pip uninstall torch torchvision torchaudio"
+    echo "  pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118"
+    echo ""
+    read -p "¿Continuar con CPU (MUCHO más lento)? (y/n): " -n 1 -r
+    echo ""
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "❌ Cancelado"
+        exit 1
+    fi
+    echo "⚠️  Usando CPU - El entrenamiento será muy lento"
+else
+    python -c "import torch; print(f'✅ GPU detectada: {torch.cuda.get_device_name(0)}')"
+fi
 
 echo ""
 read -p "¿Continuar con reentrenamiento? (y/n): " -n 1 -r
@@ -46,7 +66,7 @@ if [ -d "models/ppo_hard" ]; then
 fi
 
 # Train Hard Mode
-PYTHONPATH=. python3 train/train_ppo.py \
+PYTHONPATH=. python train/train_ppo.py \
     --config configs/env_hard.yaml \
     --output models/ppo_hard \
     --timesteps 4000000 \
@@ -58,7 +78,7 @@ echo ""
 
 # Evaluate immediately
 echo "📊 Evaluando Hard Mode..."
-PYTHONPATH=. python3 train/eval_hard.py \
+PYTHONPATH=. python train/eval_hard.py \
     --model models/ppo_hard/final_model \
     --episodes 100 \
     --output results/hard_evaluation_4M.json
@@ -82,7 +102,7 @@ if [ -d "models/ppo_medium" ]; then
 fi
 
 # Train Medium Mode
-PYTHONPATH=. python3 train/train_ppo.py \
+PYTHONPATH=. python train/train_ppo.py \
     --config configs/env_medium.yaml \
     --output models/ppo_medium \
     --timesteps 3000000 \
@@ -94,7 +114,7 @@ echo ""
 
 # Evaluate immediately
 echo "📊 Evaluando Medium Mode..."
-PYTHONPATH=. python3 train/eval_medium.py \
+PYTHONPATH=. python train/eval_medium.py \
     --model models/ppo_medium/final_model \
     --episodes 100 \
     --output results/medium_evaluation_3M.json
@@ -115,5 +135,5 @@ echo "  • models/ppo_hard_old_2M/"
 echo "  • models/ppo_medium_old_2M/"
 echo ""
 echo "Siguiente paso: Comparar métricas"
-echo "  python3 scripts/compare_retraining.py"
+echo "  python scripts/compare_retraining.py"
 echo ""
