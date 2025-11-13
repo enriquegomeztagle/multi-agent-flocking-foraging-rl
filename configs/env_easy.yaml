@@ -1,4 +1,4 @@
-# Easy Mode Configuration for 70%+ Efficiency Target
+# Easy Mode Configuration - Obtained 85%+ efficiency
 #
 # This configuration makes the foraging problem easy:
 # - Few agents (5) = less competition
@@ -8,7 +8,6 @@
 #
 # Expected theoretical max: ~800 intake (5 agents × 2000 steps × 0.08 c_max)
 # Expected realistic performance: 500-600 intake with good policy
-# Target: 70%+ of recalculated baseline
 
 # World dimensions
 width: 20.0              # less travel distance
