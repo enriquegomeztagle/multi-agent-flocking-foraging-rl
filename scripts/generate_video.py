@@ -2,22 +2,20 @@
 Generate videos of agent behavior from trained models or baseline.
 
 This script can generate videos from:
-1. Trained RL models
+1. Trained RL models (with VecNormalize support)
 2. Baseline Boids agent
-3. Random agent (for comparison)
 """
 
 import argparse
 import numpy as np
 import imageio
 from pathlib import Path
-import json
 import yaml
+import pickle
 
 from env.flockforage_parallel import FlockForageParallel, EnvConfig
 from env.boids_agent import ClassicalBoidsAgent
 from stable_baselines3 import PPO
-from stable_baselines3.common.vec_env import VecNormalize
 
 
 def generate_video_from_rl(
@@ -26,11 +24,11 @@ def generate_video_from_rl(
     output_path: str,
     n_episodes: int = 1,
     episode_length: int = None,
-    fps: int = 10,
+    fps: int = 20,
     seed: int = None
 ):
     """
-    Generate video from trained RL model.
+    Generate video from trained RL model with VecNormalize support.
     
     Args:
         model_path: Path to trained PPO model
@@ -43,10 +41,22 @@ def generate_video_from_rl(
     """
     print(f"Loading RL model from: {model_path}")
     model = PPO.load(model_path)
+    
+    # Load VecNormalize if available
+    model_dir = Path(model_path).parent
+    vecnorm_path = model_dir / "vecnormalize.pkl"
+    
+    if vecnorm_path.exists():
+        print(f"Loading VecNormalize from: {vecnorm_path}")
+        with open(vecnorm_path, 'rb') as f:
+            vec_normalize = pickle.load(f)
+    else:
+        vec_normalize = None
+        print("No VecNormalize found")
+    
     print("✅ Model loaded")
     
     env = FlockForageParallel(EnvConfig(**config))
-    
     episode_length = episode_length or config['episode_len']
     
     all_frames = []
@@ -59,10 +69,16 @@ def generate_video_from_rl(
         episode_frames = []
         
         for step in range(episode_length):
-            # Get action from model
+            # Prepare observations
             obs_array = np.array([obs[agent] for agent in env.agents])
             obs_flat = obs_array.flatten()
-            action, _ = model.predict(obs_flat, deterministic=True)
+            
+            # Normalize observations if VecNormalize exists
+            if vec_normalize is not None:
+                obs_flat = vec_normalize.normalize_obs(obs_flat.reshape(1, -1)).flatten()
+            
+            # Get action from model (stochastic for natural movement)
+            action, _ = model.predict(obs_flat, deterministic=False)
             action_dict = {agent: int(action[i]) for i, agent in enumerate(env.agents)}
             
             # Render frame
@@ -91,7 +107,7 @@ def generate_video_from_baseline(
     output_path: str,
     n_episodes: int = 1,
     episode_length: int = None,
-    fps: int = 10,
+    fps: int = 20,
     seed: int = None
 ):
     """
@@ -174,7 +190,7 @@ def main():
         "--output",
         type=str,
         required=True,
-        help="Output video path (e.g., videos/easy_mode_rl.mp4)"
+        help="Output video path (e.g., videos/easy_final.mp4)"
     )
     
     parser.add_argument(
@@ -201,8 +217,8 @@ def main():
     parser.add_argument(
         "--fps",
         type=int,
-        default=10,
-        help="Frames per second for video (default: 10)"
+        default=20,
+        help="Frames per second for video (default: 20)"
     )
     
     parser.add_argument(
@@ -249,4 +265,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
