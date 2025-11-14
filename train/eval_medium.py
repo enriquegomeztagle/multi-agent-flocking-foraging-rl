@@ -11,11 +11,17 @@ This script:
 import json
 import time
 import argparse
+import sys
 from pathlib import Path
 import numpy as np
 import yaml
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import VecNormalize
+
+# Set UTF-8 encoding for Windows
+if sys.platform == 'win32':
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 from env.flockforage_parallel import FlockForageParallel, EnvConfig
 from env.gym_wrapper import FlockForageGymWrapper
