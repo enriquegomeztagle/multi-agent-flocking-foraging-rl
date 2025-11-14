@@ -225,8 +225,8 @@ with tab1:
                 # Create efficiency histogram with color-coded ranges
                 fig_eff = go.Figure()
 
-                bins = np.histogram_bin_edges(episodes_df["efficiency_percent"], bins=30)
-                hist, _ = np.histogram(episodes_df["efficiency_percent"], bins=bins)
+                bins = np.histogram_bin_edges(episodes_df["efficiency_percent"].to_numpy(), bins=30)
+                hist, _ = np.histogram(episodes_df["efficiency_percent"].to_numpy(), bins=bins)
 
                 colors = []
                 for bin_center in (bins[:-1] + bins[1:]) / 2:
@@ -302,7 +302,7 @@ with tab1:
                 "Max": "{:.2f}",
                 "CV (%)": "{:.2f}"
             }),
-            use_container_width=True
+            width='stretch'
         )
 
 with tab2:
@@ -459,7 +459,7 @@ with tab2:
 
         with col2:
             # Coefficient of variation over quarters
-            quarters = np.array_split(episodes_df["efficiency_percent"], 4)
+            quarters = np.array_split(episodes_df["efficiency_percent"].to_numpy(), 4)
             cv_trend = [(q.std() / q.mean() * 100) for q in quarters if len(q) > 0 and q.mean() > 0]
             if len(cv_trend) >= 2:
                 cv_change = cv_trend[-1] - cv_trend[0]
@@ -487,7 +487,8 @@ with tab2:
             )
 
         # Performance quartile transitions
-        episodes_df["quartile"] = pd.qcut(episodes_df["efficiency_percent"], q=4, labels=["Q1 (bajo)", "Q2", "Q3", "Q4 (alto)"])
+        episodes_df["quartile"] = pd.qcut(episodes_df["efficiency_percent"], q=4, duplicates='drop')
+        episodes_df["quartile"] = episodes_df["quartile"].astype(str)
 
         fig_quartiles = go.Figure()
         fig_quartiles.add_trace(go.Scatter(
@@ -566,7 +567,8 @@ with tab3:
         if "reward" in episodes_df.columns:
             episodes_df[f"reward_ma{window}"] = episodes_df["reward"].rolling(window=window, min_periods=1).mean()
 
-        # Multi-metric trend plot with dual y-axis
+        from plotly.subplots import make_subplots
+        
         fig = make_subplots(
             rows=2, cols=1,
             subplot_titles=("Eficiencia y Gini a lo Largo del Tiempo", "Reward y Pasos a lo Largo del Tiempo"),
@@ -575,74 +577,62 @@ with tab3:
         )
 
         # Row 1: Efficiency and Gini
-        fig.add_trace(
-            go.Scatter(
-                x=episodes_df["episode"],
-                y=episodes_df["efficiency_percent"],
-                mode="lines",
-                name="Eficiencia",
-                line=dict(color="#1f77b4", width=1),
-                opacity=0.4
-            ),
+        fig.add_scatter(
+            x=episodes_df["episode"],
+            y=episodes_df["efficiency_percent"],
+            mode="lines",
+            name="Eficiencia",
+            line=dict(color="#1f77b4", width=1),
+            opacity=0.4,
             row=1, col=1, secondary_y=False
         )
 
-        fig.add_trace(
-            go.Scatter(
-                x=episodes_df["episode"],
-                y=episodes_df[f"efficiency_ma{window}"],
-                mode="lines",
-                name=f"Eficiencia (MA{window})",
-                line=dict(color="#1f77b4", width=2)
-            ),
+        fig.add_scatter(
+            x=episodes_df["episode"],
+            y=episodes_df[f"efficiency_ma{window}"],
+            mode="lines",
+            name=f"Eficiencia (MA{window})",
+            line=dict(color="#1f77b4", width=2),
             row=1, col=1, secondary_y=False
         )
 
-        fig.add_trace(
-            go.Scatter(
-                x=episodes_df["episode"],
-                y=episodes_df["gini"],
-                mode="lines",
-                name="Gini",
-                line=dict(color="#ff7f0e", width=1.5)
-            ),
+        fig.add_scatter(
+            x=episodes_df["episode"],
+            y=episodes_df["gini"],
+            mode="lines",
+            name="Gini",
+            line=dict(color="#ff7f0e", width=1.5),
             row=1, col=1, secondary_y=True
         )
 
         # Row 2: Reward and Steps
         if "reward" in episodes_df.columns:
-            fig.add_trace(
-                go.Scatter(
-                    x=episodes_df["episode"],
-                    y=episodes_df["reward"],
-                    mode="lines",
-                    name="Reward",
-                    line=dict(color="#2ca02c", width=1),
-                    opacity=0.4
-                ),
+            fig.add_scatter(
+                x=episodes_df["episode"],
+                y=episodes_df["reward"],
+                mode="lines",
+                name="Reward",
+                line=dict(color="#2ca02c", width=1),
+                opacity=0.4,
                 row=2, col=1, secondary_y=False
             )
 
-            fig.add_trace(
-                go.Scatter(
-                    x=episodes_df["episode"],
-                    y=episodes_df[f"reward_ma{window}"],
-                    mode="lines",
-                    name=f"Reward (MA{window})",
-                    line=dict(color="#2ca02c", width=2)
-                ),
+            fig.add_scatter(
+                x=episodes_df["episode"],
+                y=episodes_df[f"reward_ma{window}"],
+                mode="lines",
+                name=f"Reward (MA{window})",
+                line=dict(color="#2ca02c", width=2),
                 row=2, col=1, secondary_y=False
             )
 
         if "steps" in episodes_df.columns:
-            fig.add_trace(
-                go.Scatter(
-                    x=episodes_df["episode"],
-                    y=episodes_df["steps"],
-                    mode="lines",
-                    name="Steps",
-                    line=dict(color="#d62728", width=1.5)
-                ),
+            fig.add_scatter(
+                x=episodes_df["episode"],
+                y=episodes_df["steps"],
+                mode="lines",
+                name="Steps",
+                line=dict(color="#d62728", width=1.5),
                 row=2, col=1, secondary_y=True
             )
 
@@ -664,7 +654,7 @@ with tab3:
 
         # Linear regression for efficiency trend
         x = np.arange(len(episodes_df))
-        slope_eff, intercept_eff, r_value_eff, p_value_eff, std_err_eff = scipy_stats.linregress(x, episodes_df["efficiency_percent"])
+        slope_eff, intercept_eff, r_value_eff, p_value_eff, std_err_eff = scipy_stats.linregress(x, episodes_df["efficiency_percent"].to_numpy())
 
         with col1:
             trend_direction = "📈 Ascendente" if slope_eff > 0.01 else "📉 Descendente" if slope_eff < -0.01 else "➡️ Estable"
@@ -677,7 +667,7 @@ with tab3:
 
         with col2:
             if "reward" in episodes_df.columns:
-                slope_rew, intercept_rew, r_value_rew, p_value_rew, std_err_rew = scipy_stats.linregress(x, episodes_df["reward"])
+                slope_rew, intercept_rew, r_value_rew, p_value_rew, std_err_rew = scipy_stats.linregress(x, episodes_df["reward"].to_numpy())
                 trend_direction = "📈 Ascendente" if slope_rew > 0.01 else "📉 Descendente" if slope_rew < -0.01 else "➡️ Estable"
                 st.metric(
                     "Tendencia de Reward",
@@ -724,7 +714,7 @@ with tab4:
                     "gini": "{:.4f}",
                     "reward": "{:.1f}"
                 }),
-                use_container_width=True,
+                width='stretch',
                 hide_index=True
             )
 
@@ -756,7 +746,7 @@ with tab4:
                     "gini": "{:.4f}",
                     "reward": "{:.1f}"
                 }),
-                use_container_width=True,
+                width='stretch',
                 hide_index=True
             )
 
@@ -794,7 +784,7 @@ with tab4:
                 })
 
         comparison_df = pd.DataFrame(comparison_data)
-        st.dataframe(comparison_df, use_container_width=True, hide_index=True)
+        st.dataframe(comparison_df, width='stretch', hide_index=True)
 
         # Outlier detection
         st.markdown("### 🎯 Detección de Outliers (Eficiencia)")
@@ -826,7 +816,7 @@ with tab4:
                     "gini": "{:.4f}",
                     "reward": "{:.1f}"
                 }),
-                use_container_width=True,
+                width='stretch',
                 hide_index=True
             )
 
@@ -906,14 +896,14 @@ with tab5:
         if "mean_neighbor_distance" in filtered_df.columns:
             format_dict["mean_neighbor_distance"] = "{:.2f}"
 
-        styled_df = filtered_df[available_cols].style.applymap(
+        styled_df = filtered_df[available_cols].style.map(
             color_efficiency,
             subset=["efficiency_percent"]
         ).format(format_dict)
 
         st.dataframe(
             styled_df,
-            use_container_width=True,
+            width='stretch',
             height=450,
         )
 
