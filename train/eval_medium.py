@@ -2,7 +2,7 @@
 Evaluate models on MEDIUM MODE configuration.
 
 This script:
-1. Loads the medium mode configuration (10 agents, 12 patches, 35×35 world)
+1. Loads the medium mode configuration (10 agents, 18 patches, 23×23 world)
 2. Evaluates trained model performance
 3. Calculates theoretical maximum and efficiency percentages
 4. Provides detailed statistics and performance analysis
