@@ -214,3 +214,8 @@ models/*/best_model/
 models/*/tensorboard/
 models/*/eval_logs/
 *.log
+
+# Doc Artifacts
+docs/final_docs/*
+!docs/final_docs/main.tex
+!docs/final_docs/main.pdf
