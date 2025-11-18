@@ -293,7 +293,7 @@ The curriculum approach (Easy → Medium → Hard → Expert) successfully enabl
 **Research Implications:**
 1. RL agents can learn to coordinate under extreme scarcity
 2. Agent/patch ratio of 1.2:1 is survivable but challenging
-3. Curriculum learning is essential for such difficult environments
+3. Progressive difficulty scaling is essential for handling such difficult environments
 4. There's a natural performance floor around 35-40% for this problem
 
 **Difficulty Ceiling:** Expert Mode represents the practical limit for this environment design. Further difficulty increases would require:

@@ -11,7 +11,7 @@ This project investigates how **individual learning agents can achieve collectiv
 1. **Biologically-inspired flocking behaviors** (Reynolds boids: cohesion, alignment, separation)
 2. **Resource foraging with competition** (logistic patch regeneration, finite capacity)
 3. **Deep reinforcement learning** (PPO with flocking-aware reward structure)
-4. **Incremental difficulty progression** (curriculum learning from abundant to extreme scarcity)
+4. **Incremental difficulty progression** (independent training across four difficulty levels from abundant to extreme scarcity)
 
 **Central Research Question:** Can multi-agent RL systems learn effective coordination strategies that scale from abundant to extremely scarce resources, including scenarios where agents outnumber resource patches?
 
@@ -465,7 +465,7 @@ Each document includes:
 3. ✅ **Scalability demonstrated** from abundant resources (0.25:1) to extreme scarcity (1.2:1)
 4. ✅ **Novel scenario validated**: Agents outnumbering patches (12:10 ratio achieving 37% efficiency)
 5. ✅ **Emergent cooperation shown**: Dynamic strategies without explicit coordination
-6. ✅ **Curriculum learning effective**: Incremental difficulty enables successful learning
+6. ✅ **Progressive difficulty design effective**: Incremental scaling across four levels enables successful learning
 7. ✅ **Configuration-driven approach**: All parameters loaded from YAML
 
 ## 📄 License

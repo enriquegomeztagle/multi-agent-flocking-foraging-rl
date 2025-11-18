@@ -263,7 +263,7 @@ Medium Mode achieves **72.55% mean efficiency**, exceeding the 60-70% target. Th
 1. ✅ Model scales well from 5 to 10 agents
 2. ✅ Moderate competition (0.56 agents/patch) is well-handled
 3. ✅ Incremental difficulty approach is effective
-4. ✅ Curriculum learning validated (Easy → Medium progression works)
+4. ✅ Progressive difficulty scaling validated (Easy → Medium transition demonstrates robustness)
 
 **Comparison Summary:**
 - Easy: 87% with 5 agents
