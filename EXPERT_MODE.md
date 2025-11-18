@@ -97,11 +97,11 @@ d_safe: 0.8
 
 | Rank | Episode | Seed | Intake | Efficiency | Gini | Notes |
 |------|---------|------|--------|------------|------|-------|
-| 🥇 | 96 | 3990 | 1121.88 | 64.48% | 0.427 | Best performance |
-| 🥈 | 87 | 3612 | 1046.72 | 60.16% | 0.455 | Above 60% |
-| 🥉 | 99 | 4116 | 1001.27 | 57.54% | 0.470 | Strong coordination |
-| 4 | 16 | 630 | 922.98 | 53.05% | 0.486 | Above average |
-| 5 | 50 | 2058 | 910.82 | 52.35% | 0.517 | Consistent performance |
+| 🥇 | 16 | 630 | 1121.88 | 64.48% | 0.303 | Best performance |
+| 🥈 | 8 | 294 | 1095.72 | 62.97% | 0.355 | Above 60% |
+| 🥉 | 3 | 84 | 974.27 | 55.99% | 0.433 | Strong coordination |
+| 4 | 89 | 3696 | 973.57 | 55.95% | 0.385 | Consistent performance |
+| 5 | 85 | 3528 | 944.05 | 54.26% | 0.441 | Above average |
 
 **Key Observation:** No episodes achieve 70%+ efficiency. Best performance is 64%, showing the extreme difficulty ceiling.
 
