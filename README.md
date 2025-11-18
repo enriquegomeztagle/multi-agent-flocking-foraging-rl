@@ -401,7 +401,7 @@ Each document includes:
 ### Fairness Metrics (Gini Coefficient)
 
 - **Medium Mode:** 0.274 (good fairness)
-- **Hard Mode:** 0.539 (moderate inequality)
+- **Hard Mode:** 0.482 (moderate inequality)
 - **Expert Mode:** 0.569 (expected high due to extreme scarcity)
 
 **Insight:** As resources become scarcer, inequality increases - some agents thrive while others struggle.
