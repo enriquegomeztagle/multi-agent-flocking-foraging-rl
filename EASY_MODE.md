@@ -93,11 +93,11 @@ d_safe: 0.6              # Safety distance
 
 | Rank | Episode | Seed | Intake | Efficiency | Notes |
 |------|---------|------|--------|------------|-------|
-| 🥇 | 38 | 1554 | 800.01 | 100.00% | Perfect score |
-| 🥈 | 73 | 3024 | 799.95 | 99.99% | Near perfect |
-| 🥉 | 76 | 3150 | 799.86 | 99.98% | Near perfect |
-| 4 | 95 | 3948 | 799.82 | 99.98% | Near perfect |
-| 5 | 59 | 2436 | 799.79 | 99.97% | Near perfect |
+| 🥇 | 16 | 630 | 800.01 | 100.00% | Perfect score |
+| 🥈 | 63 | 2604 | 800.01 | 100.00% | Perfect score |
+| 🥉 | 68 | 2814 | 798.57 | 99.82% | Near perfect |
+| 4 | 89 | 3696 | 796.57 | 99.57% | Near perfect |
+| 5 | 52 | 2142 | 796.09 | 99.51% | Near perfect |
 
 **Key Insight:** Multiple episodes achieve near-perfect or perfect efficiency!
 
