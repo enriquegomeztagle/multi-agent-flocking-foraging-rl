@@ -113,14 +113,14 @@ d_safe: 0.8
 
 | Aspect | Hard Mode | Expert Mode | Impact |
 |--------|-----------|-------------|--------|
-| **Mean Efficiency** | 45.90% | 37.12% | -8.78pp moderate drop |
-| **Median Efficiency** | 40.27% | 37.55% | -2.72pp small drop |
+| **Mean Efficiency** | 49.86% | 37.12% | -12.74pp larger drop |
+| **Median Efficiency** | 51.81% | 37.55% | -14.26pp moderate drop |
 | **Best Case** | 80% | 64% | -16pp lower ceiling |
 | **Worst Case** | 18% | 13% | -5pp worse floor |
 | **Fairness (Gini)** | 0.539 | 0.569 | +6% worse inequality |
 | **Consistency** | High variance | Moderate variance | Better than expected |
 
-### Why Only 37% (vs 46% in Hard)?
+### Why Only 37% (vs 50% in Hard)?
 
 The efficiency drop is surprisingly **smaller than expected** given:
 
@@ -157,9 +157,9 @@ The efficiency drop is surprisingly **smaller than expected** given:
 Easy Mode:    87.22% ━━━━━━━━━━━━━━━━━━━━━━━━━━ 5 agents, 20 patches
                 ↓ (-14.67pp)
 Medium Mode:  72.55% ━━━━━━━━━━━━━━━━━━━━ 10 agents, 18 patches
-                ↓ (-26.65pp)
-Hard Mode:    45.90% ━━━━━━━━━━━━ 10 agents, 15 patches
-                ↓ (-8.78pp)
+                ↓ (-22.69pp)
+Hard Mode:    49.86% ━━━━━━━━━━━━━ 10 agents, 15 patches
+                ↓ (-12.74pp)
 Expert Mode:  37.12% ━━━━━━━━━━ 12 agents, 10 patches
 ```
 
@@ -182,7 +182,7 @@ Expert Mode:  37.12% ━━━━━━━━━━ 12 agents, 10 patches
 |------|------------|------|---------------|----------|
 | **Easy** | 87.22% | N/A | 80/100 | Abundant resources |
 | **Medium** | 72.55% | 0.274 | 52/100 | Moderate competition |
-| **Hard** | 45.90% | 0.539 | 6/100 | High scarcity |
+| **Hard** | 49.86% | 0.482 | 6/100 | High scarcity |
 | **Expert** | 37.12% | 0.569 | 0/100 | Extreme survival |
 
 ---
@@ -284,11 +284,11 @@ Expert Mode achieves **37.12% mean efficiency**, exceeding the 25-35% target ran
 **Final Performance Summary:**
 - **Easy** (5ag/20p): 87.22% - Abundant resources
 - **Medium** (10ag/18p): 72.55% - Moderate competition
-- **Hard** (10ag/15p): 45.90% - High scarcity
+- **Hard** (10ag/15p): 49.86% - High scarcity
 - **Expert** (12ag/10p): 37.12% - **Extreme survival**
 
 **Key Achievement:**
-The curriculum approach (Easy → Medium → Hard → Expert) successfully enabled the model to learn progressively harder scenarios, maintaining functional performance even when fundamental resource constraints (agent/patch > 1) emerge.
+The progressive difficulty design (Easy → Medium → Hard → Expert) successfully demonstrates model scalability across increasingly harder scenarios, maintaining functional performance even when fundamental resource constraints (agent/patch > 1) emerge.
 
 **Research Implications:**
 1. RL agents can learn to coordinate under extreme scarcity

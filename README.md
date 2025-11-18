@@ -58,9 +58,9 @@ Efficiency %
 
 **Efficiency Drops:**
 
-- Easy → Medium: -14.7pp (smooth progression)
-- Medium → Hard: -22.7pp (significant challenge increase)
-- Hard → Expert: -12.7pp (gradual, demonstrates robustness)
+- Easy → Medium: -14.67pp (smooth progression)
+- Medium → Hard: -22.69pp (significant challenge increase)
+- Hard → Expert: -12.74pp (gradual, demonstrates robustness)
 
 ---
 
@@ -314,9 +314,9 @@ No explicit coordination rewards or communication required.
 
 Smooth efficiency drops validate incremental design:
 
-- Easy → Medium: -14.7pp (manageable increase)
-- Medium → Hard: -26.7pp (significant but learnable)
-- Hard → Expert: -8.8pp (demonstrates robustness)
+- Easy → Medium: -14.67pp (manageable increase)
+- Medium → Hard: -22.69pp (significant but learnable)
+- Hard → Expert: -12.74pp (demonstrates robustness)
 
 No catastrophic failures despite extreme parameter changes.
 

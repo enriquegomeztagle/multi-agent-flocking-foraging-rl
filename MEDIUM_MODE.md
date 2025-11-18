@@ -13,7 +13,7 @@
 1. **Scale Testing**: Double the agents (5 → 10) while maintaining good performance
 2. **Moderate Competition**: Introduce controlled resource scarcity (0.56 agents/patch)
 3. **Coordination Challenge**: Require more sophisticated multi-agent coordination
-4. **Curriculum Step**: Bridge between Easy and Hard difficulties
+4. **Difficulty Progression**: Bridge between Easy and Hard difficulties
 
 ---
 
@@ -188,7 +188,7 @@ The per-agent efficiency drops by 58%, which is expected with increased competit
 1. **Competition Effects**: Agent/patch ratio of 0.56 creates noticeable but manageable competition
 2. **Coordination Emerges**: 10 agents learn to distribute across 18 patches effectively
 3. **Variance Increases**: Std deviation grows with more agents (97.56 → 288.07)
-4. **Curriculum Works**: Incremental difficulty enables better learning than radical jumps
+4. **Progressive Difficulty Works**: Incremental scaling enables better learning than radical jumps
 
 ### Challenges 🔧
 
