@@ -1,0 +1,131 @@
+\documentclass[10pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\decimalpoint
+\usepackage{amsmath, amssymb}
+\usepackage{xcolor}
+\usepackage{geometry}
+\geometry{letterpaper, margin=1in}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usepackage{caption}
+\usepackage{tocloft}
+\usepackage{fancyhdr}
+
+\usepackage[colorlinks=true, linkcolor=black, urlcolor=black, citecolor=black]{hyperref}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{Universidad Panamericana \\ Maestría en Ciencia de Datos \\ Aprendizaje de Máquina 2 \\ 
+    \vspace{0.5cm} Proyecto Final: \textit{Flocking y Foraging Cooperativo mediante Aprendizaje por Refuerzo Multiagente}}
+\author{Enrique Ulises Báez Gómez Tagle}
+\date{\today}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\setlength{\headheight}{30.94444pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[C]{\textcolor{gray}{Enrique Ulises Báez Gómez Tagle | Flocking y Foraging Cooperativo mediante Aprendizaje por Refuerzo Multiagente | MCD: Aprendizaje de Máquina II}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{gray}\leaders\hrule height \headrulewidth\hfill}}
+
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    
+    {\Large \textbf{Universidad Panamericana}} \\[0.5cm]
+    {\large Facultad de Ingeniería} \\[1cm]
+    
+    {\large \textbf{Maestría en Ciencia de Datos}} \\[2cm]
+    
+    {\Large \textbf{Aprendizaje de Máquina II}} \\[1cm]
+    
+    \vspace{2cm}
+    
+    {\Huge \textbf{Proyecto Final}} \\[1cm]
+    
+    {\LARGE \textit{Flocking y Foraging Cooperativo mediante} \\[0.3cm]
+    \textit{Aprendizaje por Refuerzo Multiagente}} \\[2cm]
+    
+    {\large \textbf{Alumno:}} \\[0.3cm]
+    {\Large Enrique Ulises Báez Gómez Tagle} \\[1.5cm]
+    
+    {\large \textbf{Profesor:}} \\[0.3cm]
+    {\Large Luis Fernando Lupián Sánchez} \\[1.5cm]
+    
+    \vfill
+    
+    {\large \today}
+    
+\end{titlepage}
+\thispagestyle{plain}
+
+\newpage
+\pagestyle{fancy}
+\begin{abstract}
+Este proyecto investiga cómo agentes individuales de aprendizaje pueden lograr coordinación colectiva en entornos con recursos escasos mediante aprendizaje por refuerzo multiagente. Se implementó un sistema que combina comportamientos de \textit{flocking} bioinspirados (cohesión, alineación, separación) con forrajeo competitivo en parches de recursos con regeneración logística. El problema abordado es la coordinación emergente en escenarios de escasez extrema, incluyendo configuraciones donde los agentes superan en número a los parches de recursos disponibles.
+
+Se utilizó Proximal Policy Optimization (PPO) con arquitecturas de redes neuronales profundas para entrenar políticas individuales en cuatro niveles de dificultad progresiva: Easy (5 agentes, 20 parches), Medium (10 agentes, 18 parches), Hard (10 agentes, 15 parches) y Expert (12 agentes, 10 parches). Los datos se generaron mediante simulaciones en entornos PettingZoo con espacios de observación de 13 dimensiones y 5 acciones discretas. El entrenamiento empleó normalización vectorizada, curriculum learning y funciones de recompensa que balancean forrajeo con comportamientos de flocking.
+
+Los resultados demuestran escalabilidad exitosa desde abundancia (87.22\% eficiencia) hasta escasez extrema (37.12\% eficiencia), validando que la sinergia entre flocking y forrajeo es esencial en todos los niveles. Se observaron comportamientos cooperativos emergentes como división dinámica de grupos, rotación eficiente de parches y compartición de recursos, sin requerir coordinación explícita. Este trabajo establece principios de diseño para sistemas multiagente robustos bajo restricciones severas de recursos.
+\end{abstract}
+
+\newpage
+\tableofcontents
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introducción y Planteamiento del Problema}
+Contexto y motivación del problema, definición clara del problema a resolver, objetivos general y específicos, así como preguntas de investigación si aplica.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Marco Teórico y Trabajos Relacionados}
+Descripción de los conceptos y técnicas de aprendizaje de máquina utilizadas, y un repaso de trabajos previos o aplicaciones similares. Justificación de la elección de técnicas.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Datos}
+Descripción del conjunto de datos: origen, tamaño, variables, tipo de problema y preprocesamientos realizados (limpieza, valores faltantes, codificación, normalización). Incluir consideraciones éticas si aplica.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Metodología y Modelos}
+Descripción de la metodología seguida, esquema de entrenamiento/validación, modelos utilizados, hiperparámetros relevantes y métricas de evaluación.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Experimentos y Resultados}
+Presentación de los experimentos realizados, resultados obtenidos, tablas y figuras. Comparación entre modelos cuando corresponda.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Análisis y Discusión}
+Interpretación crítica de los resultados, patrones observados, fuentes de error, problemas de sobreajuste o subajuste y limitaciones del enfoque.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusiones y Trabajo Futuro}
+Síntesis de las contribuciones y aprendizajes, junto con sugerencias de mejoras, nuevos datos, extensiones y aplicaciones futuras.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Reproducibilidad}
+Instrucciones para replicar los experimentos: enlace al repositorio, dependencias, versiones de librerías y comandos necesarios.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Referencias Bibliográficas}
+Listado de fuentes consultadas siguiendo un formato de citación consistente (APA, IEEE u otro).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Apéndices (Opcionales)}
+Material complementario como tablas extensas, figuras adicionales, fragmentos de código o capturas de notebooks.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Código utilizado} 
+\subsection{Link al repositorio con código fuente}
+\url{https://github.com/enriquegomeztagle/multi-agent-flocking-foraging-rl.git}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
