@@ -245,6 +245,13 @@ El entorno simula física cinemática simple, dinámica de recursos con regenera
     \item Restricciones físicas: $v_{\max} \in [1.2, 1.5]$, $a_{\max} \in [0.15, 0.2]$, $\omega_{\max} \in [0.25, 0.3]$
 \end{itemize}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{../../exports/easy_evaluation.json_fig10_agent_trajectories.png}
+\caption{Trayectorias de agentes en Easy Mode. Se observan patrones de exploración coordinada y visitas recurrentes a parches de recursos.}
+\label{fig:agent_trajectories_easy}
+\end{figure}
+
 \textbf{Parches de Recursos:}
 \begin{itemize}
     \item Stock $S(t) \in [0, S_{\max}]$ con regeneración logística: $\frac{dS}{dt} = r \cdot S \cdot (1 - \frac{S}{S_{\max}})$
@@ -537,6 +544,20 @@ Interpretación & Excelente (equidad) & Buena (equidad) & Moderada (desigualdad)
 \end{tabular}
 \end{table}
 
+\begin{figure}[H]
+\centering
+\begin{tabular}{cc}
+\includegraphics[width=0.48\textwidth]{../../exports/easy_evaluation.json_fig1_metrics_boxplot.png} &
+\includegraphics[width=0.48\textwidth]{../../exports/medium_evaluation.json_fig1_metrics_boxplot.png} \\
+\small (a) Easy Mode & \small (b) Medium Mode \\[0.5cm]
+\includegraphics[width=0.48\textwidth]{../../exports/hard_evaluation.json_fig1_metrics_boxplot.png} &
+\includegraphics[width=0.48\textwidth]{../../exports/expert_evaluation.json_fig1_metrics_boxplot.png} \\
+\small (c) Hard Mode & \small (d) Expert Mode \\
+\end{tabular}
+\caption{Distribución de métricas clave (eficiencia, intake, Gini, polarización) para los cuatro niveles de dificultad. Se observa mayor variabilidad en niveles de escasez.}
+\label{fig:metrics_boxplot_all}
+\end{figure}
+
 \textbf{Degradación de Eficiencia:}
 \begin{itemize}
     \item Easy $\rightarrow$ Medium: $-14.67$pp (suave)
@@ -591,6 +612,20 @@ $\leq$ 30\% (Crítico) & 0\% & 0\% & 10\% & 24\% \\
 
 \textit{*Expert mode: Máximo alcanzable es 64.48\%. El 76\% de episodios logra $\geq$30\% eficiencia, demostrando robustez bajo escasez extrema.}
 
+\begin{figure}[H]
+\centering
+\begin{tabular}{cc}
+\includegraphics[width=0.48\textwidth]{../../exports/easy_evaluation.json_fig2_performance_tiers.png} &
+\includegraphics[width=0.48\textwidth]{../../exports/medium_evaluation.json_fig2_performance_tiers.png} \\
+\small (a) Easy Mode & \small (b) Medium Mode \\[0.5cm]
+\includegraphics[width=0.48\textwidth]{../../exports/hard_evaluation.json_fig2_performance_tiers.png} &
+\includegraphics[width=0.48\textwidth]{../../exports/expert_evaluation.json_fig2_performance_tiers.png} \\
+\small (c) Hard Mode & \small (d) Expert Mode \\
+\end{tabular}
+\caption{Distribución de episodios por tier de performance en los cuatro niveles. Se observa desplazamiento hacia tiers inferiores conforme aumenta la escasez de recursos.}
+\label{fig:performance_tiers_all}
+\end{figure}
+
 \textbf{Hallazgos:}
 \begin{itemize}
     \item \textbf{Easy:} 98\% de episodios $\geq 60$\% eficiencia (muy consistente).
@@ -601,8 +636,6 @@ $\leq$ 30\% (Crítico) & 0\% & 0\% & 10\% & 24\% \\
 
 \subsection{Análisis de Equidad (Gini)}
 
-\begin{figure}[H]
-\centering
 \textbf{Evolución de Desigualdad con Escasez:}
 \begin{itemize}
     \item Easy Mode: Gini = 0.107 (excelente equidad)
@@ -610,6 +643,16 @@ $\leq$ 30\% (Crítico) & 0\% & 0\% & 10\% & 24\% \\
     \item Hard Mode: Gini = 0.482 (+76\% desigualdad vs Medium)
     \item Expert Mode: Gini = 0.569 (+18\% vs Hard)
 \end{itemize}
+
+\begin{figure}[H]
+\centering
+\begin{tabular}{cc}
+\includegraphics[width=0.48\textwidth]{../../exports/hard_evaluation.json_fig3_efficiency_vs_gini.png} &
+\includegraphics[width=0.48\textwidth]{../../exports/expert_evaluation.json_fig3_efficiency_vs_gini.png} \\
+\small (a) Hard Mode & \small (b) Expert Mode \\
+\end{tabular}
+\caption{Relación entre eficiencia y coeficiente de Gini en Hard y Expert modes. Se observa correlación negativa: mayor eficiencia tiende a asociarse con menor desigualdad.}
+\label{fig:efficiency_vs_gini}
 \end{figure}
 
 \textbf{Interpretación:} A medida que recursos disminuyen, algunos agentes logran especializarse en rutas eficientes mientras otros tienen menor acceso. En Expert mode, algunos agentes obtienen casi cero intake mientras otros se acercan al máximo teórico.
@@ -665,6 +708,13 @@ Polarización & 0.645 $\pm$ 0.089 & 0.395 $\pm$ 0.132 & +0.250 \\
 \end{tabular}
 \end{table}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{../../exports/baseline_boids_test.json_fig2_efficiency_histogram.png}
+\caption{Distribución de eficiencia del Baseline Clásico de Boids en Easy Mode. Se observa concentración extrema cerca del 100\% con varianza mínima, demostrando que reglas fijas bien calibradas son óptimas en abundancia.}
+\label{fig:baseline_efficiency_histogram}
+\end{figure}
+
 \textbf{Interpretación:}
 
 \begin{itemize}
@@ -713,6 +763,17 @@ A pesar de no tener comunicación explícita ni coordinación centralizada, los 
     \item En Expert mode: Grupos más dispersos y dinámicos para reducir competencia.
 \end{itemize}
 
+\begin{figure}[H]
+\centering
+\begin{tabular}{cc}
+\includegraphics[width=0.48\textwidth]{../../exports/hard_evaluation.json_fig10_agent_trajectories.png} &
+\includegraphics[width=0.48\textwidth]{../../exports/expert_evaluation.json_fig10_agent_trajectories.png} \\
+\small (a) Hard Mode & \small (b) Expert Mode \\
+\end{tabular}
+\caption{Trayectorias de agentes en Hard y Expert modes. Se observan patrones de división dinámica de grupos (flock splitting), rotación eficiente entre parches, y exploración coordinada del espacio bajo condiciones de escasez.}
+\label{fig:agent_trajectories_hard_expert}
+\end{figure}
+
 \subsection{Patrones Identificados}
 
 \textbf{Umbral Crítico (Agent/Patch ratio $\approx$ 0.7):}
@@ -757,6 +818,13 @@ La regeneración es más lenta cerca de $S_{\max}$ y cero en $S=0$. Esto incenti
     \item Dejar parches en $S \approx S_{\max}/2$ (máxima tasa de regeneración).
     \item Evitar depleción total (penalización implícita por pérdida de regeneración futura).
 \end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{../../exports/expert_evaluation.json_fig4_rolling_mean.png}
+\caption{Media móvil de eficiencia en Expert Mode (ventana de 10 episodios). Se observa estabilización de la política entrenada con varianza controlada, demostrando robustez del aprendizaje.}
+\label{fig:rolling_mean_expert}
+\end{figure}
 
 \subsection{Limitaciones del Enfoque}
 
