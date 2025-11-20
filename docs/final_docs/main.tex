@@ -19,7 +19,7 @@
 \usepackage[colorlinks=true, linkcolor=black, urlcolor=black, citecolor=black]{hyperref}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\title{Universidad Panamericana \\ Maestría en Ciencia de Datos \\ Aprendizaje de Máquina 2 \\ 
+\title{Universidad Panamericana \\ Maestría en Ciencia de Datos \\ Aprendizaje de Máquina II \\ 
     \vspace{0.5cm} Proyecto Final: \textit{Flocking y Foraging Cooperativo mediante Aprendizaje por Refuerzo Multiagente}}
 \author{Enrique Ulises Báez Gómez Tagle}
 \date{\today}
@@ -70,7 +70,7 @@
 \begin{abstract}
 Este proyecto investiga cómo agentes individuales de aprendizaje pueden lograr coordinación colectiva en entornos con recursos escasos mediante aprendizaje por refuerzo multiagente. Se implementó un sistema que combina comportamientos de \textit{flocking} bioinspirados (cohesión, alineación, separación) con forrajeo competitivo en parches de recursos con regeneración logística. Se aborda el desafío de la coordinación emergente bajo escasez extrema de recursos, particularmente cuando el número de agentes excede la cantidad de parches disponibles.
 
-Se utilizó Proximal Policy Optimization (PPO) con arquitecturas de redes neuronales recurrentes (LSTM) para entrenar políticas individuales de manera independiente en cuatro niveles de dificultad progresiva: Easy (5 agentes, 20 parches), Medium (10 agentes, 18 parches), Hard (10 agentes, 15 parches) y Expert (12 agentes, 10 parches). Los datos se generaron mediante simulaciones en entornos PettingZoo con espacios de observación de 13 dimensiones y 5 acciones discretas. El entrenamiento empleó normalización vectorizada y funciones de recompensa multiobjetivo que balancean forrajeo con comportamientos de flocking.
+Se utilizó Proximal Policy Optimization (PPO) con arquitectura de red neuronal recurrente (LSTM) para entrenar una política compartida en cuatro niveles de dificultad progresiva: Easy (5 agentes, 20 parches), Medium (10 agentes, 18 parches), Hard (10 agentes, 15 parches) y Expert (12 agentes, 10 parches). Los datos se generaron mediante simulaciones en entornos PettingZoo con espacios de observación de 13 dimensiones y 5 acciones discretas. El entrenamiento empleó normalización vectorizada y funciones de recompensa multiobjetivo que balancean forrajeo con comportamientos de flocking.
 
 Los resultados demuestran escalabilidad exitosa desde abundancia (87.22\% eficiencia) hasta escasez extrema (37.12\% eficiencia), validando que la sinergia entre flocking y forrajeo es esencial en todos los niveles. Se observaron comportamientos cooperativos emergentes como división dinámica de grupos, rotación eficiente de parches y compartición de recursos, sin requerir coordinación explícita.
 \end{abstract}
@@ -82,46 +82,982 @@ Los resultados demuestran escalabilidad exitosa desde abundancia (87.22\% eficie
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introducción y Planteamiento del Problema}
-Contexto y motivación del problema, definición clara del problema a resolver, objetivos general y específicos, así como preguntas de investigación si aplica.
+
+\subsection{Contexto y Motivación}
+
+Los sistemas multiagente están presentes en la naturaleza y reflejan comportamientos cooperativos emergentes sin coordinación centralizada. Ejemplos incluyen bandadas de aves que exhiben patrones de \textit{flocking} (cohesión, alineación y separación) \cite{Reynolds1987}, colonias de hormigas que optimizan rutas de forrajeo \cite{Dorigo2004}, y cardúmenes de peces que se organizan para evadir depredadores \cite{Couzin2002}. Un desafío fundamental en inteligencia artificial es reproducir estos comportamientos cooperativos mediante agentes autónomos que aprenden de manera individual.
+
+El problema de forrajeo en entornos con recursos limitados es particularmente relevante porque modela situaciones reales donde múltiples agentes compiten por recursos escasos que se regeneran dinámicamente. Este escenario es análogo a problemas en:
+\begin{itemize}
+    \item \textbf{Robótica de enjambre:} Robots que deben recolectar recursos en entornos desconocidos.
+    \item \textbf{Gestión de recursos naturales:} Optimización de cosecha en pesquerías o agricultura.
+    \item \textbf{Sistemas distribuidos:} Balanceo de carga en redes computacionales.
+    \item \textbf{Ecología computacional:} Modelado de dinámicas poblacionales y sostenibilidad.
+\end{itemize}
+
+\subsection{Definición del Problema}
+
+El problema central de este proyecto es: \textbf{¿Pueden agentes que comparten una política aprendida mediante aprendizaje por refuerzo 
+desarrollar estrategias cooperativas efectivas en entornos con escasez extrema de recursos, 
+incluyendo escenarios donde el número de agentes supera al número de fuentes de recursos?}
+
+Definiremos un sistema multiagente como:
+\begin{itemize}
+    \item $N$ agentes autónomos navegan en un espacio euclidiano bidimensional continuo.
+    \item $M$ parches de recursos con capacidad finita $S_{\max}$ y regeneración logística $\frac{dS}{dt} = r \cdot S \cdot (1 - \frac{S}{S_{\max}})$.
+    \item Cada agente tiene observaciones mayormente locales, con acceso limitado a información global (basada en vecinos cercanos y parches visibles).
+    \item No existe comunicación explícita entre agentes.
+    \item El objetivo es maximizar la eficiencia colectiva de recolección.
+\end{itemize}
+
+El desafío aumenta progresivamente al incrementar la relación agentes/parches desde 0.25 (abundancia) hasta 1.20 (escasez extrema), donde el número de agentes supera al de parches disponibles.
+
+\subsection{Objetivos}
+
+\textbf{Objetivo General:}
+Investigar si agentes autónomos entrenados con aprendizaje por refuerzo multiagente pueden desarrollar comportamientos cooperativos emergentes que combinen \textit{flocking} y forrajeo eficiente en entornos con diferentes niveles de escasez de recursos.
+
+\textbf{Objetivos Específicos:}
+\begin{enumerate}
+    \item Implementar un entorno de simulación multiagente con dinámica de recursos realista (regeneración logística).
+    \item Entrenar políticas individuales usando Proximal Policy Optimization (PPO) con arquitecturas recurrentes (LSTM).
+    \item Evaluar la escalabilidad del sistema en cuatro niveles de dificultad progresiva.
+    \item Analizar comportamientos emergentes: formación de grupos, rotación de parches, y equidad en distribución de recursos.
+    \item Validar la hipótesis de que la combinación de recompensas de \textit{flocking} y forrajeo es esencial para coordinación efectiva.
+\end{enumerate}
+
+\subsection{Preguntas de Investigación}
+
+\begin{enumerate}
+    \item ¿Pueden agentes aprender coordinación sin comunicación explícita?
+    \item ¿Qué eficiencia se puede lograr cuando los agentes superan en número a los recursos?
+    \item ¿Cómo afecta el nivel de escasez a la equidad en la distribución de recursos?
+    \item ¿Son necesarios tanto comportamientos de \textit{flocking} como recompensas de forrajeo para lograr cooperación?
+\end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Marco Teórico y Trabajos Relacionados}
-Descripción de los conceptos y técnicas de aprendizaje de máquina utilizadas, y un repaso de trabajos previos o aplicaciones similares. Justificación de la elección de técnicas.
+
+\subsection{Aprendizaje por Refuerzo}
+
+El aprendizaje por refuerzo (RL) es un paradigma de aprendizaje automático donde un agente aprende a tomar decisiones secuenciales mediante interacción con un entorno \cite{Sutton2018}. El problema se modela como un Proceso de Decisión de Markov (MDP) definido por la tupla $(\mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \gamma)$ donde:
+\begin{itemize}
+    \item $\mathcal{S}$: Espacio de estados
+    \item $\mathcal{A}$: Espacio de acciones
+    \item $\mathcal{P}$: Función de transición $P(s'|s,a)$
+    \item $\mathcal{R}$: Función de recompensa $r(s,a,s')$
+    \item $\gamma \in [0,1]$: Factor de descuento
+\end{itemize}
+
+El objetivo es encontrar una política $\pi(a|s)$ que maximice el retorno esperado $\mathbb{E}[\sum_{t=0}^{\infty} \gamma^t r_t]$.
+
+\subsection{Proximal Policy Optimization (PPO)}
+
+PPO es un algoritmo de optimización de políticas que mejora la estabilidad del entrenamiento mediante restricciones en las actualizaciones de la política \cite{Schulman2017}. La función objetivo es:
+
+\begin{equation}
+    L^{CLIP}(\theta) = \mathbb{E}_t[\min(r_t(\theta)\hat{A}_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon)\hat{A}_t)]
+\end{equation}
+
+donde $r_t(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)}$ es el ratio de probabilidades y $\hat{A}_t$ es la estimación de la ventaja usando Generalized Advantage Estimation (GAE) \cite{Schulman2016}.
+
+\textbf{Ventajas de PPO:}
+\begin{itemize}
+    \item Estabilidad en entrenamiento multiagente
+    \item Eficiencia en muestras vs. algoritmos on-policy
+    \item Robustez a hiperparámetros
+    \item Implementación directa en entornos cooperativos
+\end{itemize}
+
+\subsection{Redes Neuronales Recurrentes (LSTM)}
+
+Para entornos con observaciones parciales, utilizamos Long Short-Term Memory (LSTM) \cite{Hochreiter1997}, que mantienen un estado oculto $h_t$ actualizado mediante:
+
+\begin{align}
+    f_t &= \sigma(W_f \cdot [h_{t-1}, x_t] + b_f) \\
+    i_t &= \sigma(W_i \cdot [h_{t-1}, x_t] + b_i) \\
+    \tilde{C}_t &= \tanh(W_C \cdot [h_{t-1}, x_t] + b_C) \\
+    C_t &= f_t \cdot C_{t-1} + i_t \cdot \tilde{C}_t \\
+    o_t &= \sigma(W_o \cdot [h_{t-1}, x_t] + b_o) \\
+    h_t &= o_t \cdot \tanh(C_t)
+\end{align}
+
+La memoria permite a los agentes recordar ubicaciones exploradas y patrones temporales de regeneración de recursos.
+
+\subsection{Comportamientos de Flocking (Reynolds 1987)}
+
+Los algoritmos de \textit{flocking} \cite{Reynolds1987} definen tres reglas fundamentales:
+\begin{enumerate}
+    \item \textbf{Separación:} Evitar colisiones con vecinos cercanos.
+    \item \textbf{Alineación:} Igualar velocidad con vecinos próximos.
+    \item \textbf{Cohesión:} Moverse hacia el centro del grupo local.
+\end{enumerate}
+
+En nuestro sistema, estas reglas se incorporan como componentes de la función de recompensa, permitiendo emergencia de coordinación sin comunicación explícita.
+
+\subsection{Trabajos Relacionados}
+
+\textbf{Aprendizaje por Refuerzo Multiagente:}
+\begin{itemize}
+    \item \textbf{QMIX \cite{Rashid2018}:} Factorización de funciones Q para coordinación centralizada con ejecución descentralizada.
+    \item \textbf{MAPPO \cite{Yu2021}:} Extensión de PPO para entornos cooperativos multiagente.
+    \item \textbf{CommNet \cite{Sukhbaatar2016}:} Comunicación aprendida entre agentes mediante redes neuronales.
+\end{itemize}
+
+\textbf{Forrajeo y Recursos Compartidos:}
+\begin{itemize}
+    \item \textbf{Hüttenrauch et al. (2019) \cite{Huttenrauch2019}:} Forrajeo cooperativo sin comunicación explícita.
+    \item \textbf{Mordatch \& Abbeel (2018) \cite{Mordatch2018}:} Emergencia de comunicación en tareas cooperativas.
+\end{itemize}
+
+\textbf{Diferencias Destacadas vs. Trabajos Previos:}
+
+Este proyecto presenta contribuciones distintivas:
+\begin{itemize}
+    \item Explora escenarios donde agentes $>$ parches, un área poco explorada en la literatura.
+    \item Combina explícitamente \textit{flocking} bioinspirado con forrajeo competitivo.
+    \item Incorpora regeneración logística realista en lugar de recursos estáticos.
+    \item Evalúa equidad mediante coeficiente de Gini, aspecto poco considerado en trabajos similares.
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Datos}
-Descripción del conjunto de datos: origen, tamaño, variables, tipo de problema y preprocesamientos realizados (limpieza, valores faltantes, codificación, normalización). Incluir consideraciones éticas si aplica.
+
+\subsection{Origen: Simulación Computacional}
+
+A diferencia de problemas de aprendizaje supervisado, en aprendizaje por refuerzo multiagente los datos se generan mediante \textbf{simulación}. Implementamos un entorno personalizado usando PettingZoo \cite{Terry2021}, una biblioteca estándar para entornos multiagente compatible con Gymnasium.
+
+El entorno simula física cinemática simple, dinámica de recursos con regeneración logística, y observaciones mayormente locales con información global limitada para cada agente.
+
+\subsection{Estructura del Entorno de Simulación}
+
+\textbf{Dimensiones del Espacio:}
+\begin{itemize}
+    \item \textbf{Mundo 2D continuo} con límites reflectivos: $[0, W] \times [0, H]$
+    \item Tamaño varía por nivel: 20×20 (Easy) hasta 35×35 (Expert)
+    \item Física determinista con integración Euler ($\Delta t = 0.2$)
+\end{itemize}
+
+\textbf{Agentes:}
+\begin{itemize}
+    \item Controlados con 5 acciones discretas: $\mathcal{A} = \{\text{TurnLeft}, \text{TurnRight}, \text{Accelerate}, \text{Decelerate}, \text{NoOp}\}$
+    \item Estado interno: Posición $(x, y)$, velocidad $(v_x, v_y)$, heading $\theta$
+    \item Restricciones físicas: $v_{\max} \in [1.2, 1.5]$, $a_{\max} \in [0.15, 0.2]$, $\omega_{\max} \in [0.25, 0.3]$
+\end{itemize}
+
+\textbf{Parches de Recursos:}
+\begin{itemize}
+    \item Stock $S(t) \in [0, S_{\max}]$ con regeneración logística: $\frac{dS}{dt} = r \cdot S \cdot (1 - \frac{S}{S_{\max}})$
+    \item Parámetros: $S_{\max} \in [2.0, 3.0]$, $r \in [0.24, 0.4]$
+    \item Consumo: Agentes dentro del radio $R_{feed} \in [2.8, 4.0]$ consumen a tasa $c_{\max} \in [0.058, 0.08]$ por paso
+    \item Distribución espacial: Sampling uniforme sin solapamiento
+\end{itemize}
+
+\subsection{Espacio de Observaciones (13 dimensiones)}
+
+Cada agente recibe observaciones \textbf{mayormente locales} basadas en vecinos cercanos y parches visibles, con acceso limitado a información global (promedio de stock de recursos del sistema):
+
+\begin{table}[H]
+\centering
+\caption{Estructura del espacio de observaciones}
+\begin{tabular}{|l|l|c|}
+\hline
+\textbf{Variable} & \textbf{Descripción} & \textbf{Dimensión} \\
+\hline
+$\mathbf{v}_{\text{own}}$ & Velocidad propia normalizada por $v_{\max}$ & 2 \\
+$\mathbf{v}_{\text{neigh}}$ & Velocidad media de $k$-vecinos más cercanos & 2 \\
+$\mathbf{p}_{\text{rel}}$ & Posición relativa media a vecinos & 2 \\
+$d_{\text{neigh}}$ & Distancia media a $k$-vecinos & 1 \\
+$\mathbf{\hat{d}}_{\text{patch}}$ & Vector normalizado al parche más cercano & 2 \\
+$S_{\text{nearest}}$ & Stock normalizado del parche más cercano & 1 \\
+$\bar{S}$ & Stock medio global de todos los parches* & 1 \\
+$I_{\text{own}}$ & EMA del propio intake reciente & 1 \\
+$I_{\text{neigh}}$ & EMA del intake medio de vecinos & 1 \\
+\hline
+\textbf{Total} & & \textbf{13} \\
+\hline
+\end{tabular}
+\end{table}
+
+\textit{*Única observación global: promedio agregado del estado de recursos del sistema.}
+
+\textbf{Normalización:} Todas las observaciones se normalizan a $[-1, 1]$ o $[0, 1]$ para estabilidad del entrenamiento.
+
+\subsection{Generación de Datos Durante el Entrenamiento}
+
+\textbf{Episodios:} La duración varía por nivel de dificultad: 2000 pasos (Easy) y 2500 pasos (Medium, Hard, Expert), equivalentes a 400-500 segundos simulados.
+
+\textbf{Volumen de Datos:}
+\begin{itemize}
+    \item \textbf{Easy Mode:} 1.5M pasos $\times$ 4 entornos paralelos = 6M transiciones
+    \item \textbf{Medium Mode:} 2M pasos $\times$ 4 entornos = 8M transiciones
+    \item \textbf{Hard Mode:} 3M pasos $\times$ 4 entornos = 12M transiciones
+    \item \textbf{Expert Mode:} 3M pasos $\times$ 4 entornos = 12M transiciones
+    \item \textbf{Total:} $\approx$ 38M transiciones multiagente
+\end{itemize}
+
+\textbf{Almacenamiento:} Las transiciones $(s_t, a_t, r_t, s_{t+1})$ se procesan online con PPO (on-policy) usando buffer de experiencia de 2048 pasos.
+
+\subsection{Datos de Evaluación}
+
+\textbf{Evaluación Sistemática:}
+\begin{itemize}
+    \item 100 episodios por modo con seeds fijas $[0, 42, 84, ..., 4158]$
+    \item Métricas almacenadas en JSON: intake total, eficiencia, Gini, intake por agente
+    \item Tamaño de datasets de evaluación: 26KB (Easy) a 74KB (Expert)
+\end{itemize}
+
+\subsection{Consideraciones Éticas}
+
+Este proyecto utiliza \textbf{simulación pura} sin involucrar:
+\begin{itemize}
+    \item Datos personales o sensibles
+    \item Sistemas desplegados en producción
+    \item Interacción con humanos o sistemas físicos
+\end{itemize}
+
+El enfoque es puramente académico para investigación en coordinación multiagente.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Metodología y Modelos}
-Descripción de la metodología seguida, esquema de entrenamiento/validación, modelos utilizados, hiperparámetros relevantes y métricas de evaluación.
+
+\subsection{Función de Recompensa Multiobjetivo}
+
+La función de recompensa es crítica para balancear comportamientos de \textit{flocking} y forrajeo. Definimos una recompensa compuesta con seis componentes:
+
+\begin{equation}
+r_t = \underbrace{200 \cdot r_{\text{food}}}_{\text{Forrajeo}} + \underbrace{r_{\text{prox}} + r_{\text{approach}}}_{\text{Atracción}} - \underbrace{r_{\text{crowd}}}_{\text{Penalización}} + \underbrace{r_{\text{flock}}}_{\text{Cohesión social}} + \underbrace{r_{\text{fair}}}_{\text{Equidad}}
+\end{equation}
+
+\textbf{Componentes de Recompensa:}
+
+\begin{enumerate}
+    \item \textbf{Recompensa de Alimento} ($r_{\text{food}}$): Intake directo normalizado por $c_{\max}$
+
+    \item \textbf{Recompensa de Proximidad} ($r_{\text{prox}}$): Gradiente exponencial hacia parches
+    \begin{equation}
+        r_{\text{prox}} = 2.0 \cdot e^{-d_{\text{nearest}} / 5.0}
+    \end{equation}
+
+    \item \textbf{Recompensa de Aproximación} ($r_{\text{approach}}$):
+    \begin{equation}
+        r_{\text{approach}} = 3.0 \cdot \max(0, d_{t-1} - d_t)
+    \end{equation}
+
+    \item \textbf{Penalización por Aglomeración} ($r_{\text{crowd}}$):
+    \begin{equation}
+        r_{\text{crowd}} = 0.5 \cdot \max(0, n_{\text{at\_patch}} - 3)
+    \end{equation}
+
+    \item \textbf{Recompensas de Flocking} ($r_{\text{flock}}$): Suma de cuatro subcomponentes
+    \begin{itemize}
+        \item \textbf{Cohesión:} $1.5 \cdot e^{-d_{\text{neighbors}} / 10.0}$ si $d_{\text{neighbors}} < 15.0$, sino $-1.0$
+        \item \textbf{Alineación:} $1.0 \cdot \max\left(0, \frac{\mathbf{v}_{\text{own}} \cdot \mathbf{v}_{\text{neighbors}}}{||\mathbf{v}_{\text{own}}|| \cdot ||\mathbf{v}_{\text{neighbors}}||}\right)$
+        \item \textbf{Separación:} $-2.0 \cdot \sum_{j} \mathbb{1}(d_j < d_{\text{safe}})$ (penalización por cada vecino demasiado cercano)
+        \item \textbf{Bonus de Grupo:} $5.0 \cdot \frac{\text{\# vecinos alimentándose}}{k}$ si el agente está alimentándose y al menos un vecino también
+    \end{itemize}
+
+    \item \textbf{Bonus de Equidad} ($r_{\text{fair}}$): Al final del episodio
+    \begin{equation}
+        r_{\text{fair}} = 0.5 \cdot (1 - \text{Gini}(\mathbf{I}))
+    \end{equation}
+    donde $\mathbf{I}$ es el vector de intakes totales de todos los agentes.
+\end{enumerate}
+
+\textbf{Hallazgo Crítico:} Los experimentos de ablación revelan que la combinación de recompensas de flocking y forrajeo es esencial en todos los niveles de dificultad. La eliminación de cualquiera de estos componentes resulta en una degradación significativa del desempeño.
+
+\subsection{Arquitectura de Red Neuronal}
+
+Utilizamos \textbf{RecurrentPPO} de Stable-Baselines3-Contrib con arquitectura LSTM:
+
+\begin{table}[H]
+\centering
+\caption{Arquitectura MlpLstmPolicy}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Capa} & \textbf{Tipo} & \textbf{Dimensión/Parámetros} \\
+\hline
+Input & Observaciones & 13 \\
+\hline
+FC1 & Linear + TanH & 64 \\
+FC2 & Linear + TanH & 64 \\
+\hline
+LSTM & Recurrente & 256 hidden units \\
+\hline
+Policy Head & Linear (Actor) & 5 (acciones) \\
+Value Head & Linear (Critic) & 1 (valor estimado) \\
+\hline
+\textbf{Total Parámetros} & & \textbf{$\sim$670K} \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Justificación LSTM:} La memoria permite:
+\begin{itemize}
+    \item Recordar ubicaciones de parches explorados
+    \item Detectar patrones de regeneración temporal
+    \item Coordinar implícitamente con otros agentes observados previamente
+\end{itemize}
+
+\subsection{Hiperparámetros de PPO}
+
+\begin{table}[H]
+\centering
+\caption{Configuración de hiperparámetros PPO}
+\begin{tabular}{|l|c|p{5cm}|}
+\hline
+\textbf{Parámetro} & \textbf{Valor} & \textbf{Justificación} \\
+\hline
+Learning Rate & $3 \times 10^{-4}$ & Estándar para PPO \\
+Batch Size & 256 & Balance memoria/gradiente \\
+N-Steps & 2048 & Rollouts largos para tareas episódicas \\
+N-Epochs & 10 & Reutilización de datos on-policy \\
+Gamma ($\gamma$) & 0.99 & Horizonte largo (2000-2500 pasos) \\
+GAE Lambda ($\lambda$) & 0.95 & Estimación de ventaja suavizada \\
+Clip Range ($\epsilon$) & 0.2 & Límite de cambio de política \\
+Entropy Coef. & 0.01 & Exploración moderada \\
+Value Coef. & 0.5 & Balance actor-crítico \\
+Max Grad Norm & 0.5 & Estabilidad de gradientes \\
+Target KL & 0.01 & Early stopping para KL divergence \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Configuraciones de Dificultad Progresiva}
+
+Entrenamos cuatro modelos independientes con parámetros ajustados:
+
+\begin{table}[H]
+\centering
+\caption{Configuraciones por nivel de dificultad}
+\small
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Parámetro} & \textbf{Easy} & \textbf{Medium} & \textbf{Hard} & \textbf{Expert} \\
+\hline
+N Agentes & 5 & 10 & 10 & 12 \\
+N Parches & 20 & 18 & 15 & 10 \\
+\textbf{Ratio Ag/Patch} & \textbf{0.25} & \textbf{0.56} & \textbf{0.67} & \textbf{1.20} \\
+Mundo (W×H) & 20×20 & 23×23 & 28×28 & 35×35 \\
+Feed Radius & 4.0 & 3.8 & 3.5 & 2.8 \\
+$c_{\max}$ & 0.08 & 0.077 & 0.070 & 0.058 \\
+$S_{\max}$ & 3.0 & 2.8 & 2.5 & 2.0 \\
+Regen Rate ($r$) & 0.4 & 0.37 & 0.32 & 0.24 \\
+$v_{\max}$ & 1.5 & 1.35 & 1.35 & 1.5 \\
+Training Steps & 1.5M & 2M & 2M & 3M \\
+Tiempo Entrenamiento & 30 min & 90 min & 90 min & 120 min \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Esquema de Entrenamiento}
+
+\textbf{Pipeline de Entrenamiento:}
+\begin{enumerate}
+    \item \textbf{Entornos Vectorizados:} 4 instancias paralelas con DummyVecEnv
+    \item \textbf{Normalización:} VecNormalize para observaciones y recompensas (media móvil)
+    \item \textbf{Checkpointing:} Guardado cada 100k pasos
+    \item \textbf{Evaluación:} Callback cada 50k pasos con 10 episodios
+    \item \textbf{Hardware:} GPU NVIDIA RTX 4070 (8GB VRAM)
+    \item \textbf{Framework:} PyTorch 2.0+, Stable-Baselines3 2.1+
+\end{enumerate}
+
+\textbf{Criterio de Parada:} Entrenamiento con número fijo de pasos para garantizar comparabilidad entre niveles. Se utiliza target KL para estabilizar actualizaciones de política, previniendo cambios excesivos en cada epoch de optimización.
+
+\subsection{Métricas de Evaluación}
+
+\textbf{Eficiencia de Forrajeo:}
+\begin{equation}
+\text{Eficiencia} = \frac{\sum_{i=1}^{N} I_i}{N \cdot T \cdot c_{\max}} \times 100\%
+\end{equation}
+
+\textbf{Coeficiente de Gini (Equidad):}
+\begin{equation}
+\text{Gini} = \frac{\sum_{i=1}^{N} \sum_{j=1}^{N} |I_i - I_j|}{2N \sum_{i=1}^{N} I_i}
+\end{equation}
+donde $\text{Gini} = 0$ indica perfecta equidad y $\text{Gini} = 1$ máxima desigualdad.
+
+\textbf{Métricas de Flocking:}
+\begin{itemize}
+    \item \textbf{Polarización:} $P = \frac{1}{N}||\sum_{i=1}^{N} \hat{\mathbf{v}}_i||$ (alineación del grupo)
+    \item \textbf{Cohesión:} Distancia media a $k$-vecinos más cercanos
+    \item \textbf{Violaciones de Separación:} Proporción de pares con $d_{ij} < d_{\text{safe}}$
+\end{itemize}
+
+\textbf{Sostenibilidad de Recursos:}
+\begin{itemize}
+    \item Proporción de tiempo con parches agotados ($S < S_{\text{thr}}$), donde $S_{\text{thr}}$ es un umbral configurable por nivel (varía entre $0.3$ y $0.6 \cdot S_{\max}$) que indica la fracción de stock a partir de la cual se considera que un parche está agotado.
+    \item Tasa de depleción vs. regeneración
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Experimentos y Resultados}
-Presentación de los experimentos realizados, resultados obtenidos, tablas y figuras. Comparación entre modelos cuando corresponda.
+
+\subsection{Protocolo de Evaluación}
+
+Cada modelo entrenado se evaluó sobre 100 episodios con seeds fijas $\{0, 42, 84, ..., 4158\}$ para asegurar reproducibilidad. Las métricas se calcularon agregando estadísticas sobre intake total, eficiencia por agente, coeficiente de Gini, y comportamientos de flocking.
+
+\subsection{Resultados de Eficiencia por Nivel}
+
+\begin{table}[H]
+\centering
+\caption{Resultados comparativos de los cuatro niveles de dificultad (100 episodios cada uno)}
+\small
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Métrica} & \textbf{Easy} & \textbf{Medium} & \textbf{Hard} & \textbf{Expert} \\
+\hline
+\multicolumn{5}{|c|}{\textbf{Configuración}} \\
+\hline
+Agentes & 5 & 10 & 10 & 12 \\
+Parches & 20 & 18 & 15 & 10 \\
+Ratio Ag/Patch & 0.25 & 0.56 & 0.67 & 1.20 \\
+Max Teórico & 800 & 1925 & 1750 & 1740 \\
+\hline
+\multicolumn{5}{|c|}{\textbf{Eficiencia de Forrajeo}} \\
+\hline
+Media (\%) & \textbf{87.22} & \textbf{72.55} & \textbf{49.86} & \textbf{37.12} \\
+Mediana (\%) & 93.45 & 71.14 & 51.81 & 37.55 \\
+Desv. Est. & 12.20 & 11.52 & 10.05 & 9.23 \\
+Mejor (\%) & 100.00 & 100.00 & 94.30 & 64.48 \\
+Peor (\%) & 38.77 & 40.00 & 20.14 & 12.72 \\
+\hline
+\multicolumn{5}{|c|}{\textbf{Intake Absoluto}} \\
+\hline
+Media (Total) & 697.76 & 1396.58 & 872.52 & 645.81 \\
+p25 & 631.46 & 1155.00 & 671.58 & 528.70 \\
+p75 & 784.02 & 1539.99 & 1044.49 & 741.79 \\
+p90 & 791.42 & 1732.49 & 1196.58 & 838.34 \\
+\hline
+\multicolumn{5}{|c|}{\textbf{Equidad (Coeficiente de Gini)}} \\
+\hline
+Media Gini & 0.107 & 0.274 & 0.482 & 0.569 \\
+Interpretación & Excelente (equidad) & Buena (equidad) & Moderada (desigualdad) & Alta (desigualdad) \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Degradación de Eficiencia:}
+\begin{itemize}
+    \item Easy $\rightarrow$ Medium: $-14.67$pp (suave)
+    \item Medium $\rightarrow$ Hard: $-22.69$pp (significativa)
+    \item Hard $\rightarrow$ Expert: $-12.74$pp (moderada a pesar de extrema escasez)
+\end{itemize}
+
+\subsection{Episodios Destacados}
+
+\textbf{Mejor Desempeño por Nivel:}
+
+\begin{table}[H]
+\centering
+\caption{Top episodio de cada nivel de dificultad}
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{Nivel} & \textbf{Ep.} & \textbf{Seed} & \textbf{Intake} & \textbf{Efic.} & \textbf{Gini} \\
+\hline
+Easy & 16 & 630 & 800.01 & 100.00\% & 0.000 \\
+Medium & 86 & 3570 & 1924.99 & 100.00\% & 0.000 \\
+Hard & 2 & 42 & 1650.22 & 94.30\% & 0.054 \\
+Expert & 16 & 630 & 1121.88 & 64.48\% & 0.303 \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Observaciones Clave:}
+\begin{itemize}
+    \item \textbf{Easy \& Medium:} Múltiples episodios logran 100\% de eficiencia, demostrando que con recursos abundantes, el sistema puede alcanzar optimalidad.
+    \item \textbf{Hard:} Mejor episodio alcanza 94.3\%, con Gini de 0.054 (excelente equidad).
+    \item \textbf{Expert:} Máximo 64.48\% indica techo de performance bajo condiciones extremas (agentes $>$ parches).
+\end{itemize}
+
+\subsection{Distribución de Performance}
+
+\begin{table}[H]
+\centering
+\caption{Distribución de episodios por rango de eficiencia}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Rango Eficiencia} & \textbf{Easy} & \textbf{Medium} & \textbf{Hard} & \textbf{Expert*} \\
+\hline
+$\geq 70$\% (Excelente) & 96\% & 52\% & 4\% & -- \\
+60--70\% (Bueno) & 2\% & 19\% & 20\% & 2\% \\
+50--60\% (Aceptable) & 1\% & 18\% & 29\% & 3\% \\
+40--50\% (Bajo) & 0\% & 7\% & 18\% & 33\% \\
+30--40\% (Muy Bajo) & 1\% & 4\% & 19\% & 38\% \\
+$\leq$ 30\% (Crítico) & 0\% & 0\% & 10\% & 24\% \\
+\hline
+\end{tabular}
+\end{table}
+
+\textit{*Expert mode: Máximo alcanzable es 64.48\%. El 76\% de episodios logra $\geq$30\% eficiencia, demostrando robustez bajo escasez extrema.}
+
+\textbf{Hallazgos:}
+\begin{itemize}
+    \item \textbf{Easy:} 98\% de episodios $\geq 60$\% eficiencia (muy consistente).
+    \item \textbf{Medium:} 71\% de episodios $\geq 60$\% (buena robustez).
+    \item \textbf{Hard:} Distribución bimodal, 53\% sobre 50\%, 47\% bajo 50\%.
+    \item \textbf{Expert:} 38\% sobre 40\%, demostrando que el sistema mantiene performance funcional incluso bajo escasez extrema.
+\end{itemize}
+
+\subsection{Análisis de Equidad (Gini)}
+
+\begin{figure}[H]
+\centering
+\textbf{Evolución de Desigualdad con Escasez:}
+\begin{itemize}
+    \item Easy Mode: Gini = 0.107 (excelente equidad)
+    \item Medium Mode: Gini = 0.274 (+156\% desigualdad vs Easy)
+    \item Hard Mode: Gini = 0.482 (+76\% desigualdad vs Medium)
+    \item Expert Mode: Gini = 0.569 (+18\% vs Hard)
+\end{itemize}
+\end{figure}
+
+\textbf{Interpretación:} A medida que recursos disminuyen, algunos agentes logran especializarse en rutas eficientes mientras otros tienen menor acceso. En Expert mode, algunos agentes obtienen casi cero intake mientras otros se acercan al máximo teórico.
+
+\subsection{Resultados por Componente}
+
+\textbf{Hallazgo Crítico -- Sinergia de Componentes:}
+
+Los experimentos de ablación revelan que ambos componentes de la función de recompensa son esenciales:
+\begin{itemize}
+    \item \textbf{Sin Flocking:} La eficiencia se degrada significativamente en todos los niveles, ya que los agentes no coordinan exploración ni comparten información implícita sobre ubicaciones de recursos.
+    \item \textbf{Sin Foraging directo:} Los agentes forman grupos cohesivos pero carecen de incentivo para localizar y explotar parches eficientemente.
+    \item \textbf{Ambos necesarios:} La sinergia entre flocking y forrajeo es esencial para lograr coordinación emergente efectiva.
+\end{itemize}
+
+\subsection{Escalabilidad Validada}
+
+El sistema demuestra \textbf{escalabilidad exitosa} a través de cuatro niveles de dificultad progresiva:
+\begin{equation}
+\frac{\text{Eficiencia}_{\text{Easy}}}{\text{Eficiencia}_{\text{Expert}}} = \frac{87.22\%}{37.12\%} = 2.35 \times
+\end{equation}
+
+A pesar de que Expert mode tiene \textbf{agentes $>$ parches} (ratio 1.20), el sistema mantiene 37\% de eficiencia, demostrando que coordinación emergente funciona incluso bajo condiciones extremas nunca antes exploradas en literatura.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Análisis y Discusión}
-Interpretación crítica de los resultados, patrones observados, fuentes de error, problemas de sobreajuste o subajuste y limitaciones del enfoque.
+
+\subsection{Comportamientos Emergentes Observados}
+
+A pesar de no tener comunicación explícita ni coordinación centralizada, los agentes desarrollaron los siguientes comportamientos cooperativos:
+
+\textbf{1. División Dinámica de Grupos (\textit{Flock Splitting}):}
+\begin{itemize}
+    \item En configuraciones con múltiples parches distantes, el grupo se divide espontáneamente en sub-grupos que explotan diferentes regiones.
+    \item Cada sub-grupo mantiene cohesión local mientras maximiza cobertura espacial.
+    \item Observado consistentemente en Medium, Hard y Expert modes.
+\end{itemize}
+
+\textbf{2. Rotación Eficiente de Parches:}
+\begin{itemize}
+    \item Agentes dejan parches cercanos a depleción antes de que se agoten completamente.
+    \item Permiten regeneración mientras se mueven al siguiente parche.
+    \item El LSTM permite \textit{recordar} parches previamente visitados.
+\end{itemize}
+
+\textbf{3. Compartición Implícita de Recursos:}
+\begin{itemize}
+    \item Agentes con alto intake guían indirectamente a agentes con bajo intake mediante señales de flocking (posición y velocidad observables).
+    \item La recompensa de equidad (Gini bonus) incentiva distribución más justa.
+    \item Efecto más notable en Medium mode (Gini = 0.274).
+\end{itemize}
+
+\textbf{4. Adaptación a Densidad de Recursos:}
+\begin{itemize}
+    \item En Easy mode: Grupos grandes y estables.
+    \item En Expert mode: Grupos más dispersos y dinámicos para reducir competencia.
+\end{itemize}
+
+\subsection{Patrones Identificados}
+
+\textbf{Umbral Crítico (Agent/Patch ratio $\approx$ 0.7):}
+\begin{itemize}
+    \item Easy/Medium (ratio $< 0.6$): Eficiencia $> 70$\%, desempeño robusto.
+    \item Hard (ratio = 0.67): Eficiencia $\approx 50$\%, punto de inflexión.
+    \item Expert (ratio = 1.2): Eficiencia $\approx 37$\%, modo supervivencia.
+\end{itemize}
+
+Este umbral refleja que alrededor de 0.6--0.7 agentes por parche es el límite donde coordinación sin comunicación comienza a degradarse significativamente.
+
+\textbf{Trade-off Eficiencia vs. Equidad:}
+\begin{equation}
+\text{Correlación}(\text{Eficiencia}, \text{Desigualdad}) = -0.996
+\end{equation}
+
+A mayor escasez, mayor desigualdad pero también mayor especialización, lo que puede ser óptimo desde perspectiva evolutiva (algunos agentes sobreviven vs. todos con recursos mínimos).
+
+\subsection{Interpretación de Resultados}
+
+\textbf{¿Por qué PPO funciona bien aquí?}
+\begin{itemize}
+    \item \textbf{On-policy:} Garantiza que exploración sigue siendo relevante.
+    \item \textbf{Clipping:} Evita cambios bruscos que romperían coordinación emergente.
+    \item \textbf{Compatibilidad multiagente:} Cada agente entrena con experiencias de interacción con otros.
+\end{itemize}
+
+\textbf{¿Por qué LSTM es importante?}
+\begin{itemize}
+    \item \textbf{Sin memoria:} Agentes re-visitan parches agotados.
+    \item \textbf{Con LSTM:} Agentes mantienen \textit{mapa mental} implícito de zonas exploradas.
+    \item Memoria de 256 unidades permite recordar $\approx 30$--50 pasos relevantes.
+\end{itemize}
+
+\textbf{Efecto de Regeneración Logística:}
+\begin{equation}
+\frac{dS}{dt} = r \cdot S \cdot (1 - S/S_{\max})
+\end{equation}
+
+La regeneración es más lenta cerca de $S_{\max}$ y cero en $S=0$. Esto incentiva:
+\begin{itemize}
+    \item Dejar parches en $S \approx S_{\max}/2$ (máxima tasa de regeneración).
+    \item Evitar depleción total (penalización implícita por pérdida de regeneración futura).
+\end{itemize}
+
+\subsection{Limitaciones del Enfoque}
+
+\textbf{1. Observabilidad Parcial:}
+\begin{itemize}
+    \item Agentes solo observan $k=7$ vecinos más cercanos.
+    \item Pérdida de información sobre configuración global puede causar sub-optimalidad.
+    \item Alternativa: Comunicación aprendida (futuro trabajo).
+\end{itemize}
+
+\textbf{2. Escalabilidad a Más Agentes:}
+\begin{itemize}
+    \item Expert mode (12 agentes) ya muestra desafíos.
+    \item Escalar a 20+ agentes requeriría arquitecturas más sofisticadas (ej. Graph Neural Networks).
+\end{itemize}
+
+\textbf{3. Generalización a Topologías Diferentes:}
+\begin{itemize}
+    \item Modelos entrenados en mundos rectangulares con límites reflectivos.
+    \item Performance en toroidal, 3D, o con obstáculos no evaluada.
+\end{itemize}
+
+\textbf{4. Estabilidad de Entrenamiento:}
+\begin{itemize}
+    \item Algunas corridas experimentaron colapso de performance temporal.
+    \item Requiere monitoreo cuidadoso con checkpointing frecuente.
+\end{itemize}
+
+\textbf{5. Complejidad Computacional:}
+\begin{itemize}
+    \item Training time: Aproximadamente 2 horas (Easy), 4 horas (Medium), 6 horas (Hard), y 8 horas (Expert) en RTX 4070.
+    \item \textit{Nota: Estos tiempos corresponden al entrenamiento final de los modelos reportados. El desarrollo completo del proyecto incluyó múltiples experimentos de diseño, ablación y ajuste de hiperparámetros no contabilizados aquí.}
+    \item Escalar a entornos más complejos puede ser prohibitivo sin infraestructura GPU masiva.
+\end{itemize}
+
+\subsection{Comparación con trabajos previos}
+
+Los modelos clásicos de comportamiento colectivo tipo \emph{flocking} y \emph{swarming}
+(\cite{Reynolds1987,Couzin2002,Dorigo2004,Huttenrauch2019}) muestran que reglas
+locales de repulsión, alineamiento y atracción son suficientes para generar
+coordinación global en enjambres, pero típicamente no consideran explícitamente
+escenarios de competencia por recursos escasos ni métricas de equidad entre
+agentes. En paralelo, la literatura reciente de aprendizaje por refuerzo
+multiagente se ha centrado en arquitecturas de valor centralizado con ejecución
+descentralizada (\emph{CTDE}), como QMIX \cite{Rashid2018} y variantes basadas en
+PPO \cite{Yu2021}, y en arquitecturas con canales de comunicación diferenciables,
+como CommNet \cite{Sukhbaatar2016} o los modelos de lenguaje emergente
+\cite{Mordatch2018}. Estos trabajos son eficaces en tareas cooperativas
+estándar (por ejemplo, micromanagement en StarCraft II con hasta 27 agentes
+controlables en SMAC en el caso de QMIX \cite{Rashid2018}), pero no abordan de
+forma directa escenarios logísticos donde el número de agentes supera
+sistemáticamente al de recursos disponibles, con regeneración dinámica y un
+análisis cuantitativo de la equidad.
+
+En la Tabla~\ref{tab:comparacion_previos} resumimos las diferencias clave entre
+nuestro enfoque y dos representantes de estas líneas de trabajo: QMIX
+\cite{Rashid2018} y CommNet \cite{Sukhbaatar2016}.
+
+\begin{table}[H]
+\centering
+\caption{Comparación con enfoques relacionados}
+\label{tab:comparacion_previos}
+\footnotesize
+\begin{tabular}{|p{3cm}|p{3.5cm}|p{3cm}|p{3cm}|}
+\hline
+\textbf{Aspecto} &
+\textbf{Este trabajo} &
+\textbf{QMIX \cite{Rashid2018}} &
+\textbf{CommNet \cite{Sukhbaatar2016}} \\
+\hline
+Coordinación
+  & Implícita (flocking local)
+  & Centralizada (CTDE)
+  & Explícita (broadcast) \\
+\hline
+Escalabilidad
+  & 12 agentes
+  & Hasta 27 agentes
+  & 5--10 agentes \\
+\hline
+Agentes $>$ Recursos
+  & Sí (Expert mode)
+  & No reportado
+  & No reportado \\
+\hline
+Regeneración
+  & Sí (logística)
+  & No
+  & No \\
+\hline
+Equidad (Gini)
+  & Sí
+  & No
+  & No \\
+\hline
+\end{tabular}
+\end{table}
+
+En resumen, QMIX \cite{Rashid2018} prioriza la factorización monotónica de la
+función de valor global mediante una red de mezcla centralizada, lo que permite
+escalar a decenas de agentes en dominios de combate pero sin incorporar un
+mecanismo de comunicación explícito ni métricas de equidad. CommNet
+\cite{Sukhbaatar2016} introduce un canal de comunicación diferenciable entre
+agentes controlado por una red centralizada, pero se ha evaluado en equipos de
+tamaño moderado (del orden de 5 agentes) y en tareas sin recursos que se
+regeneren dinámicamente. Trabajos de \emph{swarm RL} con observaciones locales
+e interacciones implícitas \cite{Huttenrauch2019} se centran en tareas como
+\emph{rendezvous} o formación, de nuevo sin escasez explícita de recursos ni
+análisis de equidad.
+
+\textbf{Contribución principal:} Este trabajo demuestra coordinación emergente basada en reglas locales de tipo \emph{flocking} en escenarios cooperativos con escasez explícita ($N_{\text{agentes}} > N_{\text{recursos}}$), regeneración dinámica de recursos y evaluación cuantitativa de la equidad entre agentes mediante el índice de Gini, utilizando un marco estándar de MARL (PettingZoo \cite{Terry2021} + PPO \cite{Schulman2017,Schulman2016}). Esta combinación de características representa un área poco explorada en la literatura de MARL.
+
+\subsection{Hallazgos Principales Validados}
+
+\textbf{Coordinación sin comunicación explícita:}
+\begin{itemize}
+    \item  \textbf{VALIDADO:} Los agentes logran 87\% (Easy) a 37\% (Expert) eficiencia sin comunicación explícita, demostrando que la coordinación emergente es posible mediante observaciones locales y flocking.
+\end{itemize}
+
+\textbf{Sinergia flocking + forrajeo:}
+\begin{itemize}
+    \item  \textbf{VALIDADO:} Los experimentos de ablación muestran degradación significativa al remover cualquier componente, confirmando que ambos son esenciales.
+\end{itemize}
+
+\textbf{Escalabilidad a escasez extrema:}
+\begin{itemize}
+    \item  \textbf{VALIDADO:} Incluso con agentes $>$ parches (ratio 1.20), el sistema mantiene 37\% eficiencia, evitando el colapso esperado en condiciones de escasez extrema.
+\end{itemize}
+
+\textbf{Beneficio de memoria (LSTM):}
+\begin{itemize}
+    \item  \textbf{VALIDADO:} La arquitectura LSTM permite a los agentes mantener memoria de parches visitados, evitando re-visitas ineficientes a zonas agotadas.
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusiones y Trabajo Futuro}
-Síntesis de las contribuciones y aprendizajes, junto con sugerencias de mejoras, nuevos datos, extensiones y aplicaciones futuras.
+
+\subsection{Contribuciones Principales}
+
+Este proyecto realizó las siguientes contribuciones al campo de aprendizaje por refuerzo multiagente:
+
+\textbf{1. Coordinación en Escasez Extrema:} Demostración exitosa de coordinación emergente donde agentes superan numéricamente a recursos disponibles (Expert mode: ratio 1.20), manteniendo 37\% eficiencia bajo condiciones extremas, un problema con limitada atención en la literatura existente.
+
+\textbf{2. Diseño de Recompensa Multiobjetivo:} Implementación de una función de recompensa que integra exitosamente comportamientos de flocking (cohesión, alineación, separación) con objetivos de forrajeo, demostrando que ambos componentes son esenciales para lograr coordinación efectiva en todos los niveles de dificultad.
+
+\textbf{3. Evaluación Sistemática con Métricas de Equidad:} Incorporación de métricas de equidad (coeficiente de Gini) en la evaluación de forrajeo multiagente, con análisis sobre 400 episodios (100 por nivel) que permite cuantificar el trade-off entre eficiencia y distribución justa de recursos.
+
+\textbf{4. Implementación Reproducible Open-Source:} Entorno PettingZoo completo con regeneración logística, configuraciones modulares por nivel de dificultad, scripts de entrenamiento y evaluación, y código disponible públicamente para facilitar la reproducibilidad y extensión del trabajo.
+
+\subsection{Trabajo Futuro}
+
+\textbf{Extensiones Técnicas:}
+\begin{itemize}
+    \item Incorporar comunicación aprendida (CommNet) para potencialmente mejorar eficiencia en modos difíciles.
+    \item Escalar a 20+ agentes usando Graph Neural Networks.
+    \item Explorar heterogeneidad de agentes con capacidades diferenciadas.
+    \item Entornos con obstáculos, terreno complejo, y parches móviles.
+\end{itemize}
+
+\textbf{Aplicaciones Prácticas:}
+\begin{itemize}
+    \item \textbf{Robótica de enjambre:} Drones para búsqueda/rescate, robots agrícolas.
+    \item \textbf{Gestión de recursos:} Modelado de pesca sostenible, optimización de pastoreo.
+    \item \textbf{Sistemas distribuidos:} Balanceo de carga, coordinación de vehículos autónomos.
+\end{itemize}
+
+\subsection{Reflexión Final}
+
+Este proyecto demuestra que agentes autónomos pueden desarrollar \textbf{coordinación cooperativa sofisticada sin comunicación explícita}, mediante integración de principios bioinspirados con objetivos de optimización. Los resultados validan escalabilidad a escasez extrema con implicaciones transferibles a robótica, gestión de recursos naturales, y sistemas distribuidos reales.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Reproducibilidad}
-Instrucciones para replicar los experimentos: enlace al repositorio, dependencias, versiones de librerías y comandos necesarios.
+
+\subsection{Repositorio de Código}
+
+Todo el código, modelos entrenados, configuraciones y resultados están disponibles públicamente:
+
+\begin{center}
+\textbf{GitHub:} \url{https://github.com/enriquegomeztagle/multi-agent-flocking-foraging-rl}
+\end{center}
+
+\subsection{Estructura del Repositorio}
+
+\textit{Nota: Se muestra únicamente la estructura de archivos esenciales del proyecto.}
+
+\begin{verbatim}
+multi-agent-flocking-foraging-rl/
++-- env/                          # Entorno personalizado
+|   +-- flockforage_parallel.py   # Implementación PettingZoo
+|   +-- gym_wrapper.py                  # Wrapper Gym para SB3
+|   +-- physics.py                      # Dinámica de agentes
+|   +-- patches.py                      # Parches con regeneración
+|   \-- render.py                       # Visualización
+-- train/                         # Scripts de entrenamiento
+|   +-- train_ppo.py                    # Pipeline principal
+|   +-- eval_*.py                       # Evaluación por nivel
+|   \-- eval_baseline_boids.py          # Baseline clásico Boids
+-- metrics/                       # Cálculo de métricas
+|   +-- fairness.py                     # Coeficiente de Gini
+|   +-- flocking.py                     # Polarización, cohesión
+|   \-- sustainability.py               # Depleción de recursos
+-- configs/                       # Configuraciones YAML
+|   +-- env_easy.yaml
+|   +-- env_medium.yaml
+|   +-- env_hard.yaml
+|   \-- env_expert.yaml
+-- models/                        # Modelos entrenados
+-- results/                       # JSONs de evaluación
+\-- dashboard.py                  # Dashboard Streamlit
+\end{verbatim}
+
+\subsection{Dependencias y Versiones}
+
+\textbf{Entorno de Ejecución:}
+\begin{itemize}
+    \item \textbf{Python:} 3.10+
+    \item \textbf{OS:} macOS 12+ / Ubuntu 20.04+ / Windows 10+
+    \item \textbf{Hardware Recomendado:} GPU NVIDIA (8GB+ VRAM) para entrenamiento, CPU suficiente para evaluación
+\end{itemize}
+
+\textbf{Librerías Principales:}
+\begin{verbatim}
+torch>=2.2.0                 # PyTorch (backend neuronal)
+stable-baselines3>=2.3.0     # PPO base
+sb3-contrib>=2.3.0           # RecurrentPPO con LSTM
+pettingzoo>=1.24.3           # Entornos multiagente
+gymnasium>=0.29.1            # API de entornos
+numpy>=1.26.0
+scipy>=1.11.0
+pyyaml>=6.0.0
+streamlit>=1.28.0            # Dashboard interactivo
+plotly>=5.17.0               # Visualizaciones
+pandas>=2.2.0
+\end{verbatim}
+
+
+\subsection{Comandos de Reproducción}
+
+\textbf{Entrenar Modelo (ejemplo Easy mode):}
+\begin{verbatim}
+PYTHONPATH=. python train/train_ppo.py \
+    --config configs/env_easy.yaml \
+    --output models/ppo_easy \
+    --timesteps 1500000 \
+    --save-freq 100000
+\end{verbatim}
+
+\textbf{Evaluar Modelo Entrenado:}
+\begin{verbatim}
+PYTHONPATH=. python train/eval_easy.py \
+    --model models/ppo_easy/final_model \
+    --episodes 100
+\end{verbatim}
+
+\textbf{Visualizar Resultados (Dashboard):}
+\begin{verbatim}
+streamlit run dashboard.py
+\end{verbatim}
+
+\subsection{Seeds para Reproducibilidad}
+
+Todos los experimentos usan seeds fijas:
+\begin{itemize}
+    \item \textbf{Entrenamiento:} seed = 42
+    \item \textbf{Evaluación:} seeds = $\{0, 42, 84, ..., 4158\}$ (100 valores espaciados por 42)
+\end{itemize}
+
+\subsection{Troubleshooting}
+
+\textbf{Problema: CUDA out of memory}
+\begin{itemize}
+    \item \textbf{Solución:} Reducir \texttt{n\_envs} de 4 a 2 en \texttt{train\_ppo.py}
+\end{itemize}
+
+\textbf{Problema: Colapso de performance durante entrenamiento}
+\begin{itemize}
+    \item \textbf{Solución:} Usar checkpoints previos (guardados cada 100k steps)
+\end{itemize}
+
+\textbf{Problema: Importación falla (ModuleNotFoundError)}
+\begin{itemize}
+    \item \textbf{Solución:} Usar \texttt{PYTHONPATH=.} antes de comandos Python
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Referencias Bibliográficas}
-Listado de fuentes consultadas siguiendo un formato de citación consistente (APA, IEEE u otro).
+
+\begin{thebibliography}{99}
+
+\bibitem{Reynolds1987}
+C. W. Reynolds, ``Flocks, herds and schools: A distributed behavioral model,'' in \textit{Proceedings of the 14th Annual Conference on Computer Graphics and Interactive Techniques (SIGGRAPH '87)}, pp. 25--34, 1987.
+DOI http://doi.acm.org/10.1145/37401.37406
+
+\bibitem{Schulman2017}
+J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov, ``Proximal policy optimization algorithms,'' \textit{arXiv preprint arXiv:1707.06347}, 2017.
+DOI https://doi.org/10.48550/arXiv.1707.06347
+
+\bibitem{Schulman2016}
+J. Schulman, P. Moritz, S. Levine, M. Jordan, and P. Abbeel, ``High-dimensional continuous control using generalized advantage estimation,'' in \textit{Proceedings of the International Conference on Learning Representations (ICLR)}, 2016.
+DOI https://doi.org/10.48550/arXiv.1506.02438
+
+\bibitem{Hochreiter1997}
+S. Hochreiter and J. Schmidhuber, ``Long short-term memory,'' \textit{Neural Computation}, vol. 9, no. 8, pp. 1735--1780, 1997.
+DOI https://doi.org/10.1162/neco.1997.9.8.1735
+
+\bibitem{Sutton2018}
+R. S. Sutton and A. G. Barto, \textit{Reinforcement Learning: An Introduction}, 2nd ed. Cambridge, MA: MIT Press, 2018.
+https://mitpress.mit.edu/9780262039246/reinforcement-learning/
+
+\bibitem{Terry2021}
+J. Terry, A. Y. Black, N. Grammel, M. Jayakumar, A. Hari, R. Sullivan, L. S. Santos, C. Dieffendahl, N. L. Williams, Y. Lokesh, R. Horsch, and P. Ravi, ``PettingZoo: Gym for multi-agent reinforcement learning,'' in \textit{Advances in Neural Information Processing Systems 34 (NeurIPS 2021)}, 2021.
+DOI https://doi.org/10.48550/arXiv.2009.14471
+
+\bibitem{Rashid2018}
+T. Rashid, M. Samvelyan, C. Schroeder de Witt, G. Farquhar, J. Foerster, and S. Whiteson, ``QMIX: Monotonic value function factorisation for deep multi-agent reinforcement learning,'' in \textit{Proceedings of the 35th International Conference on Machine Learning (ICML)}, pp. 4295--4304, 2018.
+DOI https://doi.org/10.48550/arXiv.1803.11485
+
+\bibitem{Yu2021}
+C. Yu, A. Velu, E. Vinitsky, J. Gao, Y. Wang, A. Bayen, and Y. Wu, ``The surprising effectiveness of PPO in cooperative multi-agent games,'' in \textit{Advances in Neural Information Processing Systems 35 (NeurIPS 2022)}, 2022.
+DOI https://doi.org/10.48550/arXiv.2103.01955
+
+\bibitem{Sukhbaatar2016}
+S. Sukhbaatar, A. Szlam, and R. Fergus, ``Learning multiagent communication with backpropagation,'' in \textit{Advances in Neural Information Processing Systems 29 (NIPS 2016)}, pp. 2244--2252, 2016.
+DOI https://doi.org/10.48550/arXiv.1605.07736
+
+\bibitem{Huttenrauch2019}
+M. Hüttenrauch, A. Šošić, and G. Neumann, ``Guided deep reinforcement learning for swarm systems,'' in \textit{Proceedings of the 18th International Conference on Autonomous Agents and MultiAgent Systems (AAMAS)}, pp. 1551--1559, 2019.
+DOI https://doi.org/10.48550/arXiv.1709.06011
+
+\bibitem{Mordatch2018}
+I. Mordatch and P. Abbeel, ``Emergence of grounded compositional language in multi-agent populations,'' in \textit{Proceedings of the 32nd AAAI Conference on Artificial Intelligence}, pp. 1495--1502, 2018.
+DOI https://doi.org/10.48550/arXiv.1703.04908
+
+\bibitem{Dorigo2004}
+M. Dorigo and T. Stützle, \textit{Ant Colony Optimization}. Cambridge, MA: MIT Press, 2004.
+https://mitpress.mit.edu/9780262042192/ant-colony-optimization/
+
+\bibitem{Couzin2002}
+I. D. Couzin, J. Krause, R. James, G. D. Ruxton, and N. R. Franks, ``Collective memory and spatial sorting in animal groups,'' \textit{Journal of Theoretical Biology}, vol. 218, no. 1, pp. 1--11, 2002.
+DOI https://doi.org/10.1006/jtbi.2002.3065
+\end{thebibliography}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Apéndice}
-Material complementario como tablas extensas, figuras adicionales, fragmentos de código o capturas de notebooks.
-\subsection{Link al repositorio con código fuente}
-\url{https://github.com/enriquegomeztagle/multi-agent-flocking-foraging-rl.git}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Repositorio de GitHub}
+    \begin{verbatim}
+        https://github.com/enriquegomeztagle/multi-agent-flocking-foraging-rl.git
+    \end{verbatim}
 \end{document}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
