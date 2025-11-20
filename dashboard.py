@@ -8,6 +8,20 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from scipy import stats as scipy_stats
 
+# Create exports directory
+EXPORT_DIR = Path("exports")
+EXPORT_DIR.mkdir(exist_ok=True)
+
+# Global counter for figure numbering
+fig_counter = 0
+
+def save_and_show(fig, title, selected_file):
+    """Save figure as PNG and display in Streamlit."""
+    global fig_counter
+    fig_counter += 1
+    filename = f"{selected_file}_fig{fig_counter}_{title}.png"
+    fig.write_image(EXPORT_DIR / filename, scale=2)
+    st.plotly_chart(fig, use_container_width=True)
 
 st.set_page_config(
     page_title="Flocking & Foraging Dashboard", page_icon="🐦", layout="wide"
@@ -174,7 +188,7 @@ with tab1:
                 height=400,
                 showlegend=False
             )
-            st.plotly_chart(fig, use_container_width=True)
+            save_and_show(fig, "metrics_boxplot", selected_file)
 
         # Performance tier breakdown
         col1, col2 = st.columns(2)
@@ -220,7 +234,7 @@ with tab1:
                     }
                 )
                 fig_tier.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
-                st.plotly_chart(fig_tier, use_container_width=True)
+                save_and_show(fig_tier, "performance_tiers", selected_file)
             else:
                 # Create efficiency histogram with color-coded ranges
                 fig_eff = go.Figure()
@@ -259,7 +273,7 @@ with tab1:
                     yaxis_title="Frecuencia",
                     showlegend=False
                 )
-                st.plotly_chart(fig_eff, use_container_width=True)
+                save_and_show(fig_eff, "efficiency_histogram", selected_file)
 
         with col2:
             # Scatter plot: Efficiency vs Gini
@@ -279,7 +293,7 @@ with tab1:
                 hover_data=["episode"],
                 color_continuous_scale="Viridis"
             )
-            st.plotly_chart(fig_scatter, use_container_width=True)
+            save_and_show(fig_scatter, "efficiency_vs_gini", selected_file)
 
         # Statistical summary
         st.subheader("Estadísticas Descriptivas")
@@ -347,7 +361,7 @@ with tab2:
                     yaxis_title="Eficiencia (%)",
                     height=400
                 )
-                st.plotly_chart(fig_rolling, use_container_width=True)
+                save_and_show(fig_rolling, "rolling_mean", selected_file)
 
             with col2:
                 # Rolling std for stability
@@ -369,7 +383,7 @@ with tab2:
                     yaxis_title="Desviación Estándar",
                     height=400
                 )
-                st.plotly_chart(fig_std, use_container_width=True)
+                save_and_show(fig_std, "rolling_std", selected_file)
 
         # Episode-to-episode improvement
         st.markdown("### 📈 Mejora Episode-to-Episode")
@@ -417,7 +431,7 @@ with tab2:
                 color_discrete_sequence=["#636EFA"]
             )
             fig_change.add_vline(x=0, line_dash="dash", line_color="red")
-            st.plotly_chart(fig_change, use_container_width=True)
+            save_and_show(fig_change, "episode_changes", selected_file)
 
         with col2:
             # Cumulative performance
@@ -438,7 +452,7 @@ with tab2:
                 yaxis_title="Eficiencia Media Acumulada (%)",
                 height=400
             )
-            st.plotly_chart(fig_cumulative, use_container_width=True)
+            save_and_show(fig_cumulative, "cumulative_improvement", selected_file)
 
         # Policy consistency: consecutive episode similarity
         st.markdown("### 🎯 Consistencia de la Política")
@@ -516,7 +530,7 @@ with tab2:
             yaxis_title="Eficiencia (%)",
             height=400
         )
-        st.plotly_chart(fig_quartiles, use_container_width=True)
+        save_and_show(fig_quartiles, "efficiency_quartiles", selected_file)
 
         # Success rate over time (if applicable)
         if "reward" in episodes_df.columns:
@@ -553,7 +567,7 @@ with tab2:
                 yaxis_title="Tasa de Éxito (%)",
                 height=400
             )
-            st.plotly_chart(fig_success, use_container_width=True)
+            save_and_show(fig_success, "success_rate", selected_file)
 
 with tab3:
     st.subheader("Tendencias Temporales")
@@ -645,7 +659,7 @@ with tab3:
         fig.update_yaxes(title_text="Steps", row=2, col=1, secondary_y=True)
 
         fig.update_layout(height=700, hovermode="x unified")
-        st.plotly_chart(fig, use_container_width=True)
+        save_and_show(fig, "agent_trajectories", selected_file)
 
         # Trend analysis
         st.subheader("Análisis de Tendencia")
@@ -931,4 +945,14 @@ with tab5:
 
 # Footer
 st.markdown("---")
-st.markdown("**Multi-Agent Flocking & Foraging RL** | Dashboard generado con Streamlit")
+st.markdown(
+    """
+    <div style='text-align: center; color: #666; padding: 20px 0;'>
+        <p style='margin: 5px 0;'><strong>Multi-Agent Flocking & Foraging RL</strong></p>
+        <p style='margin: 5px 0;'>Built with ❤️ by Enrique GT</p>
+        <p style='margin: 5px 0; font-size: 0.9em;'>© 2025. All rights reserved.</p>
+        <p style='margin: 5px 0; font-size: 0.85em;'>Powered by PyTorch • Stable-Baselines3 • PettingZoo • Streamlit ⚡</p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
