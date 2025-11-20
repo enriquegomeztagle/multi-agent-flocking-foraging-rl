@@ -247,9 +247,9 @@ El entorno simula física cinemática simple, dinámica de recursos con regenera
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{../../exports/easy_evaluation.json_fig10_agent_trajectories.png}
-\caption{Trayectorias de agentes en Easy Mode. Se observan patrones de exploración coordinada y visitas recurrentes a parches de recursos.}
-\label{fig:agent_trajectories_easy}
+\includegraphics[width=0.85\textwidth]{../../exports/easy-mode-ss.png}
+\caption{Visualización del entorno en Easy Mode. Se observan 5 agentes (puntos de colores) explorando 20 parches de recursos (círculos verdes) en un mundo 20×20. Los agentes mantienen cohesión grupal mientras forrajean eficientemente.}
+\label{fig:easy_mode_screenshot}
 \end{figure}
 
 \textbf{Parches de Recursos:}
@@ -715,6 +715,13 @@ Polarización & 0.645 $\pm$ 0.089 & 0.395 $\pm$ 0.132 & +0.250 \\
 \label{fig:baseline_efficiency_histogram}
 \end{figure}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{../../exports/baseline-mode-ss.png}
+\caption{Visualización del Baseline Clásico de Boids en Easy Mode. Los agentes (puntos de colores) exhiben comportamiento determinista con distribución uniforme y cohesión perfecta, resultado de reglas fijas bien calibradas.}
+\label{fig:baseline_mode_screenshot}
+\end{figure}
+
 \textbf{Interpretación:}
 
 \begin{itemize}
@@ -772,6 +779,13 @@ A pesar de no tener comunicación explícita ni coordinación centralizada, los 
 \end{tabular}
 \caption{Trayectorias de agentes en Hard y Expert modes. Se observan patrones de división dinámica de grupos (flock splitting), rotación eficiente entre parches, y exploración coordinada del espacio bajo condiciones de escasez.}
 \label{fig:agent_trajectories_hard_expert}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{../../exports/expert-mode-ss.png}
+\caption{Visualización de Expert Mode bajo escasez extrema (12 agentes, 10 parches, ratio 1.2:1). Se observa dispersión dinámica de agentes, flock splitting para reducir competencia, y adaptación a densidad de recursos limitados en un mundo 35×35.}
+\label{fig:expert_mode_screenshot}
 \end{figure}
 
 \subsection{Patrones Identificados}
