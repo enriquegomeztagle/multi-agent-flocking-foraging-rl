@@ -219,3 +219,8 @@ models/*/eval_logs/
 docs/final_docs/*
 !docs/final_docs/main.tex
 !docs/final_docs/main.pdf
+docs/presentation/*
+!docs/presentation/main.tex
+!docs/presentation/main.pdf
+!docs/presentation/fonts/
+!docs/presentation/images/
