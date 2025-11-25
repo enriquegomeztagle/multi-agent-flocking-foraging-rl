@@ -36,7 +36,7 @@
 \begin{itemize}
     \item En la naturaleza: bandadas de aves, cardúmenes de peces, colonias de hormigas.
     \item Comportamientos colectivos complejos a partir de reglas locales simples.
-    \item Pregunta central: \textbf{¿podemos reproducir esta coordinación con agentes que aprenden?}
+    \item Pregunta central: \textbf{¿Podemos reproducir esta coordinación con agentes que aprenden?}
     \item En particular: \textbf{forrajeo} en entornos con recursos limitados que se regeneran.
 \end{itemize}
 \end{frame}
@@ -74,11 +74,7 @@
             \end{itemize}
             \item Parches de recursos:
             \begin{itemize}
-                \item Stock $S(t) \in [0, S_{\max}]$.
-                \item Regeneración logística:
-                \[
-                    \frac{dS}{dt} = r S \left(1 - \frac{S}{S_{\max}}\right)
-                \]
+                \item Regeneración logística tipo sigmoide
             \end{itemize}
         \end{itemize}
     \end{column}
@@ -247,8 +243,7 @@ Expert & 0.57 & Alta desigualdad \\
     \begin{itemize}
         \item Repositorio GitHub: \hrefcol{https://github.com/enriquegomeztagle/multi-agent-flocking-foraging-rl}{multi-agent-flocking-foraging-rl}
         \item Videos de demostración: \hrefcol{https://github.com/enriquegomeztagle/multi-agent-flocking-foraging-rl/tree/main/videos}{videos}
-        \item Dashboard interactivo (Streamlit): \\
-        \hrefcol{http://54.165.139.51:8502}{http://54.165.139.51:8502}
+        \item Dashboard interactivo (Streamlit): \hrefcol{http://54.165.139.51:8502}{http://54.165.139.51:8502}
     \end{itemize}
 \end{itemize}
 \end{frame}
