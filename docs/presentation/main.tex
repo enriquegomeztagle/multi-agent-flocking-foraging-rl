@@ -1,0 +1,259 @@
+\documentclass{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{ragged2e}
+\usepackage{graphicx}
+\usetheme{uic}
+\usepackage{amsfonts,amsmath,oldgerm,algorithmic,algorithm}
+\usepackage[font=small,labelfont=bf]{caption}
+
+\newcommand{\hrefcol}[2]{\textcolor{uihteal}{\href{#1}{#2}}}
+\newcommand{\testcolor}[1]{\colorbox{#1}{\textcolor{#1}{test}}~\texttt{#1}}
+
+\usefonttheme[onlymath]{serif}
+\usefonttheme{serif}
+
+% ----------------------------------------------------------------------
+% TITLE
+% ----------------------------------------------------------------------
+\title{Flocking y Foraging Cooperativo \\ mediante Aprendizaje por Refuerzo Multiagente}
+\titlebackground{images/flock_form.jpeg}
+\subtitle{Proyecto Final -- Maestría en Ciencia de Datos \\ Aprendizaje de Máquina II}
+\author{Enrique Ulises Báez Gómez Tagle}
+\date{\today}
+
+\begin{document}
+\maketitle
+\footlinecolor{uicblue}
+
+% ======================================================================
+% 1. MOTIVACIÓN Y PROBLEMA
+% ======================================================================
+\begin{chapter}[images/flocking.png]{uicblue}{1. Motivación y Problema}
+\textit{Coordinación emergente bajo escasez de recursos}
+\end{chapter}
+
+\begin{frame}{1.1 Contexto}
+\begin{itemize}
+    \item En la naturaleza: bandadas de aves, cardúmenes de peces, colonias de hormigas.
+    \item Comportamientos colectivos complejos a partir de reglas locales simples.
+    \item Pregunta central: \textbf{¿podemos reproducir esta coordinación con agentes que aprenden?}
+    \item En particular: \textbf{forrajeo} en entornos con recursos limitados que se regeneran.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{1.2 Planteamiento del problema}
+\begin{itemize}
+    \item Sistema multiagente:
+    \begin{itemize}
+        \item $N$ agentes en un mundo 2D continuo.
+        \item $M$ parches de recursos con stock finito y \textbf{regeneración logística}.
+        \item Observaciones mayormente locales, sin comunicación explícita.
+    \end{itemize}
+    \vspace{0.3cm}
+    \item \textbf{Pregunta principal:}\\
+    \textit{¿Pueden agentes que comparten una política aprendida con RL desarrollar estrategias cooperativas efectivas incluso cuando hay más agentes que fuentes de recursos?}
+\end{itemize}
+\end{frame}
+
+% ======================================================================
+% 2. ENTORNO Y METODOLOGÍA
+% ======================================================================
+\begin{chapter}[images/foraging.jpg]{uicblue}{2. Entorno y Metodología}
+\textit{Del mundo simulado a la política compartida}
+\end{chapter}
+
+\begin{frame}{2.1 Entorno de simulación}
+\begin{columns}
+    \begin{column}{0.55\textwidth}
+        \begin{itemize}
+            \item Mundo 2D continuo con límites reflectivos.
+            \item Agentes:
+            \begin{itemize}
+                \item 5 acciones discretas: girar, acelerar, frenar, no-op.
+                \item Observaciones de 13 dimensiones (vecinos + parche cercano + stock medio).
+            \end{itemize}
+            \item Parches de recursos:
+            \begin{itemize}
+                \item Stock $S(t) \in [0, S_{\max}]$.
+                \item Regeneración logística:
+                \[
+                    \frac{dS}{dt} = r S \left(1 - \frac{S}{S_{\max}}\right)
+                \]
+            \end{itemize}
+        \end{itemize}
+    \end{column}
+    \begin{column}{0.45\textwidth}
+        \begin{figure}
+            \centering
+            \includegraphics[width=0.85\textwidth]{../../exports/easy-mode-ss.png}
+            \caption{Easy mode: 5 agentes, 20 parches.}
+        \end{figure}
+    \end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{2.2 Niveles de dificultad}
+\centering
+\begin{tabular}{lccc}
+\textbf{Modo} & \textbf{\# Agentes} & \textbf{\# Parches} & \textbf{Ag/Patch} \\
+\hline
+Easy   & 5  & 20 & 0.25 \\
+Medium & 10 & 18 & 0.56 \\
+Hard   & 10 & 15 & 0.67 \\
+Expert & 12 & 10 & 1.20 \\
+\end{tabular}
+
+\vspace{0.4cm}
+\begin{itemize}
+    \item Escalamos desde \textbf{abundancia} (0.25) hasta \textbf{escasez extrema} (1.20).
+    \item En Expert mode hay más agentes que parches: \textbf{no todos pueden alimentarse a la vez}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{2.3 Aprendizaje por refuerzo multiagente}
+\begin{itemize}
+    \item Algoritmo: \textbf{Recurrent PPO} (Stable-Baselines3 + sb3-contrib).
+    \item Arquitectura:
+    \begin{itemize}
+        \item MLP (2 capas de 64 neuronas) + \textbf{LSTM de 256 unidades}.
+        \item Actor--Crítico con política \textbf{compartida} entre todos los agentes.
+    \end{itemize}
+    \item Función de recompensa \textbf{multiobjetivo}:
+    \begin{itemize}
+        \item Forrajeo: intake de alimento.
+        \item Flocking: cohesión, alineación, separación, bonus de grupo.
+        \item Penalización por aglomeración en parches saturados.
+        \item Bonus de \textbf{equidad}: término basado en $(1 - \text{Gini})$ al final del episodio.
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+% ======================================================================
+% 3. RESULTADOS
+% ======================================================================
+\begin{chapter}[images/marl.jpeg]{uicblue}{3. Resultados}
+\textit{Eficiencia, equidad y comportamientos emergentes}
+\end{chapter}
+
+\begin{frame}{3.1 Eficiencia de forrajeo}
+\centering
+\begin{tabular}{lcc}
+\textbf{Modo} & \textbf{Eficiencia media} & \textbf{Máx. observada} \\
+\hline
+Easy   & 87.2\% & 100\% \\
+Medium & 72.6\% & 100\% \\
+Hard   & 49.9\% & 94.3\% \\
+Expert & 37.1\% & 64.5\% \\
+\end{tabular}
+
+\vspace{0.4cm}
+\begin{itemize}
+    \item La eficiencia decrece con la escasez, pero \textbf{no colapsa} en Expert mode.
+    \item Incluso con agentes $>$ parches, el sistema mantiene $\sim$37\% de eficiencia.
+    \item Múltiples episodios en Easy y Medium alcanzan el óptimo teórico.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{3.2 Equidad (coeficiente de Gini)}
+\centering
+\begin{tabular}{lcc}
+\textbf{Modo} & \textbf{Gini medio} & \textbf{Interpretación} \\
+\hline
+Easy   & 0.11 & Muy equitativo \\
+Medium & 0.27 & Buena equidad \\
+Hard   & 0.48 & Desigualdad moderada \\
+Expert & 0.57 & Alta desigualdad \\
+\end{tabular}
+
+\vspace{0.4cm}
+\begin{itemize}
+    \item A mayor escasez, \textbf{más desigual} la distribución de recursos entre agentes.
+    \item Observamos un \textbf{trade-off} eficiencia vs. equidad:
+    \begin{itemize}
+        \item Los episodios más eficientes tienden a tener menor Gini.
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{3.3 Comportamientos emergentes}
+\begin{columns}
+    \begin{column}{0.55\textwidth}
+        \begin{itemize}
+            \item \textbf{División dinámica de grupos (flock splitting)}:
+            \begin{itemize}
+                \item Sub-grupos explotan regiones distintas del mapa.
+            \end{itemize}
+            \item \textbf{Rotación de parches}:
+            \begin{itemize}
+                \item Agentes abandonan parches casi agotados y regresan tras regeneración.
+            \end{itemize}
+            \item \textbf{Compartición implícita}:
+            \begin{itemize}
+                \item Agentes exitosos “arrastran” a otros vía señales de flocking.
+            \end{itemize}
+        \end{itemize}
+    \end{column}
+    \begin{column}{0.45\textwidth}
+        \begin{figure}
+            \centering
+            \includegraphics[width=0.85\textwidth]{../../exports/expert-mode-ss.png}
+            \caption{Expert mode: 12 agentes, 10 parches.}
+        \end{figure}
+    \end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{3.4 Comparación con baseline Boids}
+\begin{itemize}
+    \item Baseline: reglas clásicas de \textit{boids} (cohesión, alineación, separación) + atracción al parche más cercano.
+    \item En Easy mode:
+    \begin{itemize}
+        \item Boids $\approx$ 100\% eficiencia, Gini $\approx 0$ (distribución casi perfecta).
+        \item RL (PPO-LSTM) $\approx$ 87\% eficiencia, Gini $\approx 0.11$.
+    \end{itemize}
+    \item \textbf{Interpretación:}
+    \begin{itemize}
+        \item Con abundancia, reglas fijas bien calibradas son casi óptimas.
+        \item El valor del RL aparece al escalar a \textbf{escasez extrema}, donde se adapta sin re-diseñar reglas.
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+% ======================================================================
+% 4. CONCLUSIONES Y DEMOS
+% ======================================================================
+\begin{chapter}[images/abm.png]{uicblue}{4. Conclusiones y Demos}
+\textit{De la simulación a las aplicaciones prácticas}
+\end{chapter}
+
+\begin{frame}{4.1 Conclusiones}
+\begin{itemize}
+    \item Es posible lograr \textbf{coordinación emergente sin comunicación explícita} usando RL multiagente + flocking.
+    \item La combinación de \textbf{recompensas de forrajeo y flocking} es esencial; remover una de ellas degrada fuertemente el desempeño.
+    \item El sistema escala desde abundancia (87\%) hasta escasez extrema (37\%) manteniendo comportamientos cooperativos.
+    \item La memoria (LSTM) ayuda a evitar revisitas ineficientes a parches agotados.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{4.2 Trabajo futuro y recursos}
+\begin{itemize}
+    \item \textbf{Trabajo futuro}:
+    \begin{itemize}
+        \item Añadir canales de comunicación aprendida (CommNet, GNNs).
+        \item Escalar a 20+ agentes y entornos con obstáculos.
+        \item Agentes heterogéneos con roles diferenciados.
+    \end{itemize}
+    \item \textbf{Código y resultados}:
+    \begin{itemize}
+        \item Repositorio GitHub: \hrefcol{https://github.com/enriquegomeztagle/multi-agent-flocking-foraging-rl}{multi-agent-flocking-foraging-rl}
+        \item Videos de demostración: \hrefcol{https://github.com/enriquegomeztagle/multi-agent-flocking-foraging-rl/tree/main/videos}{videos}
+        \item Dashboard interactivo (Streamlit): \\
+        \hrefcol{http://54.165.139.51:8502}{http://54.165.139.51:8502}
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\footlinecolor{}
+\backmatter
+
+\end{document}
