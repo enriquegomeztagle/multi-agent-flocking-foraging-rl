@@ -224,3 +224,6 @@ docs/presentation/*
 !docs/presentation/main.pdf
 !docs/presentation/fonts/
 !docs/presentation/images/
+!docs/presentation/beamerthemeuic.sty
+!docs/presentation/uiccolor.sty
+!docs/presentation/uicfont.sty
